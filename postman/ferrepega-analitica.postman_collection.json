@@ -45,7 +45,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"correo\": \"admin@ferrepega.com\",\n  \"contrasena\": \"Admin2025*\"\n}",
+              "raw": "{\n  \"correo\": \"admin@ferrepega.com\",\n  \"contrasena\": \"{{admin_clave}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

@@ -35,7 +35,8 @@ if [ ! -f "$FRONT/wsgi.py" ]; then
   exit 1
 fi
 
-echo ">>> [1/6] Instalando Nginx y Python..."
+echo ">>> [1/6] Zona horaria e instalación de Nginx y Python..."
+timedatectl set-timezone America/Bogota
 apt-get update -y
 apt-get install -y nginx python3-venv python3-pip curl
 
