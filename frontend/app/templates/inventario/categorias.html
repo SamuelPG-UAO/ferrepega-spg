@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Categorías{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Inventario</h1><p>Las categorías agrupan los productos del catálogo.</p></div>
+  <div class="acciones"><button class="btn" type="button" data-dialogo="d-cat-nueva" data-limpiar>Nueva categoría</button></div>
+</div>
+{% include "inventario/_tabs.html" %}
+<section class="panel">
+  <div class="tabla-envoltura"><table>
+    <thead><tr><th>Categoría</th><th class="num">Productos activos</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+    <tbody>{% for c in categorias %}
+      <tr><td>{{ c.nombre }}</td><td class="num">{{ c.total_productos | entero }}</td>
+        <td><div class="acciones-fila">
+          <button type="button" class="btn btn-sec btn-mini" data-dialogo="d-cat-editar" data-accion="{{ url_for('inventario.categoria_renombrar', categoria_id=c.id) }}"
+                  data-rellenar='{{ {"nombre": c.nombre} | tojson | forceescape }}'>Renombrar</button>
+          <form method="post" action="{{ url_for('inventario.categoria_eliminar', categoria_id=c.id) }}" data-confirmar="¿Eliminar la categoría «{{ c.nombre }}»?">
+            {{ csrf_input() }}<button class="btn btn-sec btn-mini" type="submit">Eliminar</button></form>
+        </div></td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="muted" style="margin-top:1rem;font-size:0.9375rem">Solo se pueden eliminar categorías que no tienen ningún producto (ni desactivado).</p>
+</section>
+<dialog id="d-cat-nueva" aria-labelledby="t-cat-nueva">
+  <form method="post" action="{{ url_for('inventario.categoria_nueva') }}" class="formulario">{{ csrf_input() }}
+    <h2 id="t-cat-nueva">Nueva categoría</h2>
+    <div class="campo"><label for="cn-nombre">Nombre</label><input id="cn-nombre" name="nombre" required minlength="2" maxlength="80"></div>
+    <div class="pie"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button><button class="btn" type="submit">Crear categoría</button></div>
+  </form>
+</dialog>
+<dialog id="d-cat-editar" aria-labelledby="t-cat-editar">
+  <form method="post" class="formulario">{{ csrf_input() }}
+    <h2 id="t-cat-editar">Renombrar categoría</h2>
+    <div class="campo"><label for="ce-nombre">Nombre</label><input id="ce-nombre" name="nombre" required minlength="2" maxlength="80"></div>
+    <div class="pie"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button><button class="btn" type="submit">Guardar</button></div>
+  </form>
+</dialog>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import estado_stock with context %}
+{% block titulo %}{{ p.nombre }}{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div>
+    <p><a href="{{ url_for('catalogo.lista') }}">← Volver al catálogo</a></p>
+    <h1>{{ p.nombre }}</h1>
+  </div>
+  {% if usuario.rol == 'admin' %}
+  <div class="acciones"><a class="btn btn-sec" href="{{ url_for('inventario.productos', q=p.nombre) }}">Gestionar en inventario</a></div>
+  {% endif %}
+</div>
+<section class="panel ficha">
+  <div>
+    <p class="muted" style="margin-bottom:0.25rem">Precio</p>
+    <div class="precio-grande">{{ p.precio | cop }}</div>
+    <p style="margin-top:1.25rem">{{ estado_stock(p) }}</p>
+    {% if p.descripcion %}<p class="muted" style="margin-top:1rem">{{ p.descripcion }}</p>{% endif %}
+  </div>
+  <dl>
+    <dt>Categoría</dt><dd>{{ p.categoria }}</dd>
+    <dt>Unidades en stock</dt><dd>{{ p.stock | entero }}</dd>
+    {% if usuario.rol != 'cliente' %}<dt>Stock mínimo</dt><dd>{{ p.stock_minimo | entero }}</dd>{% endif %}
+    {% if usuario.rol != 'cliente' %}<dt>Código de origen</dt><dd>{{ p.codigo_origen or 'Sin código' }}</dd>{% endif %}
+    <dt>Referencia interna</dt><dd>#{{ p.id }}</dd>
+  </dl>
+</section>
+{% endblock %}

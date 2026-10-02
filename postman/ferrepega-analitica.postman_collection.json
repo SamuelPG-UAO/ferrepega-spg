@@ -1,0 +1,2473 @@
+{
+  "info": {
+    "name": "Ferrepega - servicio-analitica",
+    "description": "Pruebas del microservicio de analítica. Requiere en marcha autenticación (8001), inventario (8002), ventas (8003) y analítica (8004). Ejecutar con 'Run collection' en orden.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Sesión (tokens)",
+      "item": [
+        {
+          "name": "1.1 Login administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"El rol es admin\", () => pm.expect(r.usuario.rol).to.eql(\"admin\"));",
+                  "pm.collectionVariables.set(\"token_admin\", r.access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/login",
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@ferrepega.com\",\n  \"contrasena\": \"Admin2025*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "1.2 Login vendedor 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"El rol es vendedor\", () => pm.expect(r.usuario.rol).to.eql(\"vendedor\"));",
+                  "pm.collectionVariables.set(\"token_vendedor\", r.access_token);",
+                  "pm.collectionVariables.set(\"id_vendedor\", r.usuario.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/login",
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"vendedor1@ferrepega.com\",\n  \"contrasena\": \"Vende2025*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "1.3 Login vendedor 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"El rol es vendedor\", () => pm.expect(r.usuario.rol).to.eql(\"vendedor\"));",
+                  "pm.collectionVariables.set(\"token_vendedor2\", r.access_token);",
+                  "pm.collectionVariables.set(\"id_vendedor2\", r.usuario.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/login",
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"vendedor2@ferrepega.com\",\n  \"contrasena\": \"Vende2025*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "1.4 Login cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"El rol es cliente\", () => pm.expect(r.usuario.rol).to.eql(\"cliente\"));",
+                  "pm.collectionVariables.set(\"token_cliente\", r.access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{auth_url}}/api/auth/login",
+              "host": [
+                "{{auth_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"cliente@ferrepega.com\",\n  \"contrasena\": \"Cliente2025*\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Salud y seguridad",
+      "item": [
+        {
+          "name": "2.1 Salud (pública)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado ok\", () => pm.expect(pm.response.json().estado).to.eql(\"ok\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/salud",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "salud"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "2.2 Sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "2.3 Token forjado (otra clave)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_forjado}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.4 El vendedor no puede ver resumen",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.5 El vendedor no puede ver ventas mensuales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-mensuales",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-mensuales"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.6 El vendedor no puede ver top productos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/top-productos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "top-productos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.7 El vendedor no puede ver ventas por categoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-por-categoria",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-por-categoria"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.8 El vendedor no puede ver ventas por vendedor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-por-vendedor",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-por-vendedor"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.9 El cliente no puede ver el resumen",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.10 El cliente no puede ver ventas diarias",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-diarias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-diarias"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.11 El vendedor no puede recalcular",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/actualizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "actualizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.12 El cliente no puede recalcular",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/actualizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "actualizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.13 La exportación de ventas es solo para el administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ventas_url}}/api/ventas/exportacion",
+              "host": [
+                "{{ventas_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "exportacion"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.14 Exportación sin token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ventas_url}}/api/ventas/exportacion",
+              "host": [
+                "{{ventas_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "exportacion"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Recalcular y comprobar coherencia",
+      "item": [
+        {
+          "name": "3.1 El administrador recalcula los resúmenes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Procesó ventas y llenó las cuatro tablas\", () => {",
+                  "  pm.expect(r.ventas_procesadas).to.be.above(0); pm.expect(r.mensuales).to.be.above(0);",
+                  "  pm.expect(r.productos).to.be.above(0); pm.expect(r.categorias).to.be.above(0); pm.expect(r.filas_vendedor).to.be.above(0); });",
+                  "pm.test(\"Informa duración y fecha\", () => { pm.expect(r.segundos).to.be.at.least(0); pm.expect(r.actualizado_en).to.be.a(\"string\"); });",
+                  "pm.collectionVariables.set(\"procesadas\", r.ventas_procesadas);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/actualizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "actualizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.2 Cuántas ventas COMPLETADAS hay (directo en servicio-ventas)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"completadas\", pm.response.json().total);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ventas_url}}/api/ventas?estado=COMPLETADA&limite=1",
+              "host": [
+                "{{ventas_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "COMPLETADA"
+                },
+                {
+                  "key": "limite",
+                  "value": "1"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.3 El resumen coincide con servicio-ventas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"num_pedidos = ventas completadas = ventas procesadas\", () => {",
+                  "  pm.expect(r.num_pedidos).to.eql(Number(pm.collectionVariables.get(\"completadas\"))); pm.expect(r.num_pedidos).to.eql(Number(pm.collectionVariables.get(\"procesadas\"))); });",
+                  "pm.test(\"Ticket promedio = total / pedidos\", () => pm.expect(Math.abs(r.ticket_promedio - r.total_ventas / r.num_pedidos)).to.be.below(0.01));",
+                  "pm.test(\"Indica cuándo se actualizó\", () => pm.expect(r.actualizado_en).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"resumen_total\", r.total_ventas);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.4 La suma de los meses = total del resumen",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const suma = pm.response.json().reduce((a, m) => a + m.total_ventas, 0);",
+                  "pm.test(\"Coincide\", () => pm.expect(Math.abs(suma - Number(pm.collectionVariables.get(\"resumen_total\")))).to.be.below(0.01));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-mensuales",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-mensuales"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.5 Exportación paginada (primera página)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Dos ventas con renglones\", () => { pm.expect(r.items).to.have.lengthOf(2); r.items.forEach(v => pm.expect(v.items.length).to.be.above(0)); });",
+                  "pm.test(\"'siguiente' es el id de la última\", () => pm.expect(r.siguiente).to.eql(r.items[1].id));",
+                  "pm.collectionVariables.set(\"siguiente\", r.siguiente);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ventas_url}}/api/ventas/exportacion?limite=2",
+              "host": [
+                "{{ventas_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "exportacion"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "2"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.6 Exportación: página que sigue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Solo ids posteriores\", () => pm.response.json().items.forEach(v => pm.expect(v.id).to.be.above(Number(pm.collectionVariables.get(\"siguiente\")))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ventas_url}}/api/ventas/exportacion?despues_de={{siguiente}}&limite=2",
+              "host": [
+                "{{ventas_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "exportacion"
+              ],
+              "query": [
+                {
+                  "key": "despues_de",
+                  "value": "{{siguiente}}"
+                },
+                {
+                  "key": "limite",
+                  "value": "2"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.7 Exportación: límite fuera de rango",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ventas_url}}/api/ventas/exportacion?limite=5000",
+              "host": [
+                "{{ventas_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "exportacion"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "5000"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Consultas de los dashboards",
+      "item": [
+        {
+          "name": "4.1 Ventas mensuales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Hay meses válidos\", () => { pm.expect(r.length).to.be.above(0);",
+                  "  r.forEach(m => { pm.expect(m.mes).to.be.within(1, 12); pm.expect(m.total_ventas).to.be.above(0); pm.expect(m.num_pedidos).to.be.above(0); }); });",
+                  "pm.test(\"Cronológico: cada fila es posterior a la anterior\", () => { for (let i = 1; i < r.length; i++)",
+                  "  pm.expect(r[i].anio * 12 + r[i].mes).to.be.above(r[i-1].anio * 12 + r[i-1].mes); });",
+                  "pm.collectionVariables.set(\"anio_ref\", r[0].anio);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-mensuales",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-mensuales"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.2 Filtrar por año",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Solo ese año\", () => { pm.expect(r.length).to.be.above(0); r.forEach(m => pm.expect(m.anio).to.eql(Number(pm.collectionVariables.get(\"anio_ref\")))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-mensuales?anio={{anio_ref}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-mensuales"
+              ],
+              "query": [
+                {
+                  "key": "anio",
+                  "value": "{{anio_ref}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.3 Año inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-mensuales?anio=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-mensuales"
+              ],
+              "query": [
+                {
+                  "key": "anio",
+                  "value": "1"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.4 Top productos por ingresos (10 por defecto)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Máximo 10, ordenados por ingresos\", () => { pm.expect(r.length).to.be.within(1, 10);",
+                  "  for (let i = 1; i < r.length; i++) pm.expect(r[i-1].ingresos).to.be.at.least(r[i].ingresos); });",
+                  "pm.test(\"Cada uno trae nombre y unidades\", () => r.forEach(p => { pm.expect(p.nombre).to.be.a(\"string\"); pm.expect(p.unidades).to.be.above(0); }));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/top-productos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "top-productos"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.5 Top 3 por unidades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Tres, ordenados por unidades\", () => { pm.expect(r).to.have.lengthOf(3);",
+                  "  for (let i = 1; i < r.length; i++) pm.expect(r[i-1].unidades).to.be.at.least(r[i].unidades); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/top-productos?limite=3&ordenar_por=unidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "top-productos"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "3"
+                },
+                {
+                  "key": "ordenar_por",
+                  "value": "unidades"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.6 Límite fuera de rango",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/top-productos?limite=1000",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "top-productos"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "1000"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.7 Criterio de orden inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/top-productos?ordenar_por=color",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "top-productos"
+              ],
+              "query": [
+                {
+                  "key": "ordenar_por",
+                  "value": "color"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.8 Ventas por categoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Ordenadas de mayor a menor\", () => { for (let i = 1; i < r.length; i++) pm.expect(r[i-1].total_ventas).to.be.at.least(r[i].total_ventas); });",
+                  "pm.test(\"Los porcentajes suman ~100\", () => pm.expect(r.reduce((a, c) => a + c.porcentaje, 0)).to.be.within(99.9, 100.1));",
+                  "pm.test(\"La suma de las categorías = total del resumen\", () =>",
+                  "  pm.expect(Math.abs(r.reduce((a, c) => a + c.total_ventas, 0) - Number(pm.collectionVariables.get(\"resumen_total\")))).to.be.below(0.01));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-por-categoria",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-por-categoria"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.9 Ranking de vendedores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Ordenado por ventas\", () => { pm.expect(r.length).to.be.above(0);",
+                  "  for (let i = 1; i < r.length; i++) pm.expect(r[i-1].total_ventas).to.be.at.least(r[i].total_ventas); });",
+                  "pm.test(\"La suma de ventas = pedidos del resumen\", () => pm.expect(r.reduce((a, v) => a + v.num_ventas, 0)).to.eql(Number(pm.collectionVariables.get(\"completadas\"))));",
+                  "const mio = r.find(v => v.vendedor_id === Number(pm.collectionVariables.get(\"id_vendedor\")));",
+                  "pm.test(\"El vendedor 1 aparece\", () => pm.expect(mio).to.not.equal(undefined));",
+                  "pm.collectionVariables.set(\"total_v1\", mio.total_ventas);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-por-vendedor",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-por-vendedor"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.10 Ranking en un rango futuro: vacío",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sin resultados\", () => pm.expect(pm.response.json()).to.eql([]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-por-vendedor?desde=2100-01-01",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-por-vendedor"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2100-01-01"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.11 'desde' posterior a 'hasta'",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-por-vendedor?desde=2020-02-01&hasta=2020-01-01",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-por-vendedor"
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2020-02-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2020-01-01"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.12 Serie mensual de todos los vendedores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Fechas = primer día del mes, en orden, sin vendedor\", () => { pm.expect(r.length).to.be.above(0);",
+                  "  r.forEach(p => { pm.expect(p.fecha.slice(8)).to.eql(\"01\"); pm.expect(p.vendedor_id).to.eql(null); });",
+                  "  for (let i = 1; i < r.length; i++) pm.expect(r[i].fecha > r[i-1].fecha).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-diarias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-diarias"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.13 El administrador filtra un vendedor, por día",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Máximo 5 puntos, todos del vendedor 1, en orden\", () => { pm.expect(r.length).to.be.within(1, 5);",
+                  "  r.forEach(p => pm.expect(p.vendedor_id).to.eql(Number(pm.collectionVariables.get(\"id_vendedor\"))));",
+                  "  for (let i = 1; i < r.length; i++) pm.expect(r[i].fecha > r[i-1].fecha).to.eql(true); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-diarias?vendedor_id={{id_vendedor}}&agrupar=dia&limite=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-diarias"
+              ],
+              "query": [
+                {
+                  "key": "vendedor_id",
+                  "value": "{{id_vendedor}}"
+                },
+                {
+                  "key": "agrupar",
+                  "value": "dia"
+                },
+                {
+                  "key": "limite",
+                  "value": "5"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.14 El vendedor ve su propia serie",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Solo lo suyo\", () => r.forEach(p => pm.expect(p.vendedor_id).to.eql(Number(pm.collectionVariables.get(\"id_vendedor\")))));",
+                  "pm.test(\"Su serie suma lo mismo que el ranking del administrador\", () =>",
+                  "  pm.expect(Math.abs(r.reduce((a, p) => a + p.total_ventas, 0) - Number(pm.collectionVariables.get(\"total_v1\")))).to.be.below(0.01));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-diarias",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-diarias"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.15 Un vendedor no puede espiar a otro con ?vendedor_id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sigue viendo solo lo suyo\", () => pm.response.json().forEach(p => pm.expect(p.vendedor_id).to.eql(Number(pm.collectionVariables.get(\"id_vendedor2\")))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-diarias?vendedor_id={{id_vendedor}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-diarias"
+              ],
+              "query": [
+                {
+                  "key": "vendedor_id",
+                  "value": "{{id_vendedor}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor2}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.16 Agrupación inválida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-diarias?agrupar=semana",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-diarias"
+              ],
+              "query": [
+                {
+                  "key": "agrupar",
+                  "value": "semana"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.17 Límite 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-diarias?limite=0",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-diarias"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "0"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Flujo completo: vender -> recalcular -> anular -> recalcular",
+      "item": [
+        {
+          "name": "5.1 Recalcular para partir de una base limpia",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/actualizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "actualizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.2 Anotar el resumen de partida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set(\"antes_pedidos\", r.num_pedidos);",
+                  "pm.collectionVariables.set(\"antes_total\", r.total_ventas);",
+                  "pm.collectionVariables.set(\"antes_unidades\", r.unidades);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.3 Elegir una categoría (inventario)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"id_cat\", pm.response.json()[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{inv_url}}/api/inventario/categorias",
+              "host": [
+                "{{inv_url}}"
+              ],
+              "path": [
+                "api",
+                "inventario",
+                "categorias"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.4 Crear un producto de prueba ($10.000, stock 5)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"id_prod\", pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{inv_url}}/api/inventario/productos",
+              "host": [
+                "{{inv_url}}"
+              ],
+              "path": [
+                "api",
+                "inventario",
+                "productos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\": \"Prueba analitica\", \"categoria_id\": {{id_cat}}, \"precio\": 10000, \"stock_inicial\": 5, \"stock_minimo\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.5 El vendedor 1 vende 2 unidades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 201\", () => pm.response.to.have.status(201));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Total 20000\", () => pm.expect(r.total).to.eql(20000));",
+                  "pm.collectionVariables.set(\"id_venta\", r.id);",
+                  "pm.collectionVariables.set(\"dia_venta\", r.fecha.slice(0, 10));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{ventas_url}}/api/ventas",
+              "host": [
+                "{{ventas_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"items\": [{\"producto_id\": {{id_prod}}, \"cantidad\": 2}]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.6 Antes de recalcular, el resumen NO cambia (es una copia al corte)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Sin cambios\", () => {",
+                  "  pm.expect(r.num_pedidos).to.eql(Number(pm.collectionVariables.get(\"antes_pedidos\")) + 0);",
+                  "  pm.expect(Math.abs(r.total_ventas - (Number(pm.collectionVariables.get(\"antes_total\")) + 0))).to.be.below(0.01);",
+                  "  pm.expect(r.unidades).to.eql(Number(pm.collectionVariables.get(\"antes_unidades\")) + 0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.7 Recalcular",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/actualizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "actualizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.8 Ahora suma 1 pedido, $20.000 y 2 unidades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"+1 pedido, +20000, +2 unidades\", () => {",
+                  "  pm.expect(r.num_pedidos).to.eql(Number(pm.collectionVariables.get(\"antes_pedidos\")) + 1);",
+                  "  pm.expect(Math.abs(r.total_ventas - (Number(pm.collectionVariables.get(\"antes_total\")) + 20000))).to.be.below(0.01);",
+                  "  pm.expect(r.unidades).to.eql(Number(pm.collectionVariables.get(\"antes_unidades\")) + 2); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.9 La venta aparece en la serie diaria del vendedor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Una fila de ese día con al menos esa venta\", () => {",
+                  "  pm.expect(r).to.have.lengthOf(1); pm.expect(r[0].num_ventas).to.be.at.least(1); pm.expect(r[0].total_ventas).to.be.at.least(20000); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/ventas-diarias?agrupar=dia&desde={{dia_venta}}&hasta={{dia_venta}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "ventas-diarias"
+              ],
+              "query": [
+                {
+                  "key": "agrupar",
+                  "value": "dia"
+                },
+                {
+                  "key": "desde",
+                  "value": "{{dia_venta}}"
+                },
+                {
+                  "key": "hasta",
+                  "value": "{{dia_venta}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_vendedor}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.10 El administrador anula la venta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{ventas_url}}/api/ventas/{{id_venta}}/anular",
+              "host": [
+                "{{ventas_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "{{id_venta}}",
+                "anular"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.11 Recalcular otra vez",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/actualizar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "actualizar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.12 Las ventas anuladas no cuentan: vuelve al estado de partida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Igual que al inicio\", () => {",
+                  "  pm.expect(r.num_pedidos).to.eql(Number(pm.collectionVariables.get(\"antes_pedidos\")) + 0);",
+                  "  pm.expect(Math.abs(r.total_ventas - (Number(pm.collectionVariables.get(\"antes_total\")) + 0))).to.be.below(0.01);",
+                  "  pm.expect(r.unidades).to.eql(Number(pm.collectionVariables.get(\"antes_unidades\")) + 0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analitica/resumen",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "analitica",
+                "resumen"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.13 Limpieza: desactivar el producto de prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Código de respuesta 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{inv_url}}/api/inventario/productos/{{id_prod}}",
+              "host": [
+                "{{inv_url}}"
+              ],
+              "path": [
+                "api",
+                "inventario",
+                "productos",
+                "{{id_prod}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://192.168.56.10:8004",
+      "type": "string"
+    },
+    {
+      "key": "auth_url",
+      "value": "http://192.168.56.10:8001",
+      "type": "string"
+    },
+    {
+      "key": "inv_url",
+      "value": "http://192.168.56.10:8002",
+      "type": "string"
+    },
+    {
+      "key": "ventas_url",
+      "value": "http://192.168.56.10:8003",
+      "type": "string"
+    },
+    {
+      "key": "token_forjado",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwicm9sIjoiYWRtaW4iLCJub21icmUiOiJJbnRydXNvIiwiZXhwIjo0MTAyNDQ0ODAwfQ.azkaKFBkhJW9iKfFbkMk4tg3xBvwXjjabuSiqpxOr1U",
+      "type": "string"
+    }
+  ]
+}

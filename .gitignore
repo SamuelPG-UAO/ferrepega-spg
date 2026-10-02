@@ -1,0 +1,21 @@
+# --- Secretos (nunca se suben) ---
+.env
+
+# --- Python ---
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# --- Vagrant / VirtualBox ---
+.vagrant/
+*.log
+
+# --- Datos del dataset (pesan mucho y tienen licencia propia: CC BY-NC-SA 4.0) ---
+# Cada persona los descarga de Kaggle y los pone en datos/
+datos/*.csv
+datos/no usados/
+
+# --- Sistema ---
+.DS_Store
+Thumbs.db

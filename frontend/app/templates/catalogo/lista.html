@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacion, estado_stock, columna_orden with context %}
+{% block titulo %}Catálogo{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div>
+    <h1>Catálogo</h1>
+    <p>Busca por nombre y filtra por categoría, precio o disponibilidad.</p>
+  </div>
+</div>
+
+<form class="filtros" method="get" role="search">
+  <div class="campo ancho"><label for="q">Buscar producto</label>
+    <input id="q" name="q" type="search" value="{{ filtros.q }}" placeholder="Martillo, taladro, pintura…"></div>
+  <div class="campo"><label for="categoria_id">Categoría</label>
+    <select id="categoria_id" name="categoria_id">
+      <option value="">Todas</option>
+      {% for c in categorias %}<option value="{{ c.id }}" {% if filtros.categoria_id == c.id | string %}selected{% endif %}>{{ c.nombre }} ({{ c.total_productos | entero }})</option>{% endfor %}
+    </select></div>
+  <div class="campo corto"><label for="precio_min">Precio desde</label>
+    <input id="precio_min" name="precio_min" inputmode="decimal" value="{{ filtros.precio_min }}" placeholder="0"></div>
+  <div class="campo corto"><label for="precio_max">Precio hasta</label>
+    <input id="precio_max" name="precio_max" inputmode="decimal" value="{{ filtros.precio_max }}" placeholder="Sin tope"></div>
+  <div class="campo corto"><label for="disponible">Disponibilidad</label>
+    <select id="disponible" name="disponible">
+      <option value="">Todos</option>
+      <option value="si" {% if filtros.disponible == 'si' %}selected{% endif %}>Con stock</option>
+      <option value="no" {% if filtros.disponible == 'no' %}selected{% endif %}>Agotados</option>
+    </select></div>
+  <input type="hidden" name="ordenar_por" value="{{ filtros.ordenar_por }}">
+  {% if filtros.descendente %}<input type="hidden" name="descendente" value="true">{% endif %}
+  <button class="btn" type="submit">Buscar</button>
+  {% if filtros.q or filtros.categoria_id or filtros.precio_min or filtros.precio_max or filtros.disponible %}
+    <a class="btn btn-sec" href="{{ url_for('catalogo.lista') }}">Quitar filtros</a>
+  {% endif %}
+</form>
+
+<section class="panel" aria-label="Resultados">
+  {% if pagina["items"] %}
+  <div class="tabla-envoltura">
+    <table>
+      <thead><tr>
+        {{ columna_orden("Producto", "nombre", filtros.ordenar_por, filtros.descendente) }}
+        <th>Categoría</th>
+        {{ columna_orden("Precio", "precio", filtros.ordenar_por, filtros.descendente, "num") }}
+        {{ columna_orden("Stock", "stock", filtros.ordenar_por, filtros.descendente, "num") }}
+        <th>Estado</th>
+      </tr></thead>
+      <tbody>
+      {% for p in pagina["items"] %}
+        <tr>
+          <td><a class="fila-enlace" href="{{ url_for('catalogo.detalle', producto_id=p.id) }}">{{ p.nombre }}</a></td>
+          <td>{{ p.categoria }}</td>
+          <td class="num">{{ p.precio | cop }}</td>
+          <td class="num">{{ p.stock | entero }}</td>
+          <td>{{ estado_stock(p) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {{ paginacion(pagina.total, pagina.limite, pagina.desplazamiento, "productos") }}
+  {% else %}
+  <div class="vacio">
+    <h3>No hay productos con esos filtros</h3>
+    <p>Prueba con otra palabra, otra categoría o un rango de precio más amplio.</p>
+    <a class="btn btn-sec" href="{{ url_for('catalogo.lista') }}">Quitar filtros</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

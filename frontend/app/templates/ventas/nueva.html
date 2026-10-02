@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block titulo %}Nueva venta{% endblock %}
+{% block contenido %}
+<div class="cabecera"><div><h1>Nueva venta</h1><p>Busca productos, agrégalos a la venta y confírmala.</p></div></div>
+
+<div class="venta-nueva" id="venta-nueva">
+  <section class="panel" aria-labelledby="t-productos">
+    <h2 id="t-productos">Productos</h2>
+    <div class="campo" style="margin-top:0.75rem">
+      <label for="buscar-producto">Buscar producto</label>
+      <input id="buscar-producto" type="search" placeholder="Escribe el nombre…" autocomplete="off">
+    </div>
+    <ul class="resultados" id="resultados-productos" aria-live="polite"></ul>
+  </section>
+
+  <section class="panel carrito" aria-labelledby="t-venta">
+    <h2 id="t-venta">Venta</h2>
+
+    <div class="campo" style="margin:0.75rem 0 1rem">
+      <label for="buscar-cliente">Cliente <span class="muted" style="font-weight:400">(opcional)</span></label>
+      <input id="buscar-cliente" type="search" placeholder="Buscar por nombre o correo" autocomplete="off">
+      <ul class="resultados" id="resultados-clientes" style="max-height:11rem" aria-live="polite"></ul>
+      <p id="cliente-elegido" class="muted" style="margin:0.4rem 0 0">Venta de mostrador (sin cliente). <a href="{{ url_for('clientes.lista') }}">Registrar un cliente nuevo</a></p>
+    </div>
+
+    <div class="tabla-envoltura">
+      <table id="tabla-carrito" hidden>
+        <thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Subtotal</th><th><span class="sr-only">Quitar</span></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="vacio" id="carrito-vacio" style="padding:1.5rem 0"><h3>La venta está vacía</h3><p>Busca un producto y agrégalo.</p></div>
+
+    <div class="total-venta"><span>Total</span><b id="total-venta">$ 0</b></div>
+    <p id="error-venta" class="aviso aviso-error" role="alert" hidden style="margin-top:1rem"></p>
+    <button class="btn" id="confirmar-venta" type="button" style="width:100%;margin-top:1rem" disabled>Confirmar venta</button>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/venta_nueva.js') }}"></script>{% endblock %}

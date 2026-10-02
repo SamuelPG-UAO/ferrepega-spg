@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_macros.html" import estado_venta with context %}
+{% block titulo %}Venta #{{ v.id }}{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div>
+    <p><a href="{{ url_for('ventas.lista') }}">← Volver a ventas</a></p>
+    <h1>Venta #{{ v.id }} {{ estado_venta(v.estado) }}</h1>
+    <p>{{ v.fecha | fecha_hora }}</p>
+  </div>
+  {% if usuario.rol == 'admin' and v.estado == 'COMPLETADA' %}
+  <div class="acciones">
+    <form method="post" action="{{ url_for('ventas.anular', venta_id=v.id) }}"
+          data-confirmar="¿Anular la venta #{{ v.id }}? Las unidades volverán al inventario y no se puede deshacer.">
+      {{ csrf_input() }}<button class="btn btn-peligro" type="submit">Anular venta</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<section class="panel">
+  <dl style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:1rem 2rem;margin:0 0 1.5rem">
+    <div><dt class="muted">Cliente</dt><dd style="margin:0;font-weight:500">{{ v.cliente_nombre or 'Venta de mostrador' }}</dd></div>
+    <div><dt class="muted">Vendedor</dt><dd style="margin:0;font-weight:500">{{ vendedor or 'Vendedor ' ~ v.vendedor_id }}</dd></div>
+  </dl>
+  <div class="tabla-envoltura"><table>
+    <thead><tr><th>Producto</th><th>Categoría</th><th class="num">Cantidad</th><th class="num">Precio unitario</th><th class="num">Subtotal</th></tr></thead>
+    <tbody>{% for i in v["items"] %}
+      <tr><td>{{ i.nombre_producto }}</td><td>{{ i.categoria }}</td><td class="num">{{ i.cantidad | entero }}</td>
+          <td class="num">{{ i.precio_unitario | cop }}</td><td class="num">{{ i.subtotal | cop }}</td></tr>{% endfor %}</tbody>
+    <tfoot><tr><td colspan="4" class="num">Total</td><td class="num">{{ v.total | cop }}</td></tr></tfoot>
+  </table></div>
+</section>
+{% endblock %}

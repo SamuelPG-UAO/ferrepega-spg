@@ -1,0 +1,34 @@
+{% extends "base_publica.html" %}
+{% block titulo %}Crear cuenta{% endblock %}
+{% block cuerpo %}
+<div class="acceso">
+  <section class="acceso-marca">
+    <div>
+      <h1>Ferre&shy;pega</h1>
+      <div class="cinta" aria-hidden="true"></div>
+      <p>Con tu cuenta puedes consultar el catálogo y ver qué hay disponible.</p>
+    </div>
+    <small>Proyecto de Redes e Infraestructura</small>
+  </section>
+  <section class="acceso-form">
+    <h2>Crear cuenta</h2>
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% if mensajes %}<div class="avisos" role="status">{% for c, t in mensajes %}<div class="aviso aviso-{{ c }}">{{ t }}</div>{% endfor %}</div>{% endif %}
+    {% endwith %}
+    <form method="post" class="formulario" novalidate>
+      {{ csrf_input() }}
+      <div class="campo"><label for="nombre">Nombre completo</label>
+        <input id="nombre" name="nombre" autocomplete="name" value="{{ nombre }}" required autofocus></div>
+      <div class="campo"><label for="correo">Correo</label>
+        <input id="correo" name="correo" type="email" autocomplete="email" value="{{ correo }}" required></div>
+      <div class="campo"><label for="contrasena">Contraseña</label>
+        <input id="contrasena" name="contrasena" type="password" autocomplete="new-password" minlength="8" required>
+        <small>Mínimo 8 caracteres.</small></div>
+      <div class="campo"><label for="confirmar">Repite la contraseña</label>
+        <input id="confirmar" name="confirmar" type="password" autocomplete="new-password" required></div>
+      <button class="btn" type="submit">Crear cuenta</button>
+    </form>
+    <p style="margin-top:1.25rem">¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a>.</p>
+  </section>
+</div>
+{% endblock %}

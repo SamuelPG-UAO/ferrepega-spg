@@ -1,0 +1,19 @@
+<dialog id="d-stock" aria-labelledby="t-stock">
+  <form method="post" action="{{ url_for('inventario.stock') }}" class="formulario">
+    {{ csrf_input() }}
+    <input type="hidden" name="volver" value="{{ request.full_path.rstrip('?') }}">
+    <input type="hidden" name="producto_id">
+    <h2 id="t-stock">Registrar movimiento de stock</h2>
+    <p class="muted" style="margin:0" data-titulo></p>
+    <div class="fila">
+      <div class="campo"><label for="s-tipo">Tipo</label>
+        <select id="s-tipo" name="tipo"><option value="ENTRADA">Entrada de mercancía</option><option value="AJUSTE">Ajuste de inventario</option></select></div>
+      <div class="campo"><label for="s-cantidad">Cantidad</label>
+        <input id="s-cantidad" name="cantidad" type="number" step="1" required>
+        <small>En un ajuste puede ser negativa para restar.</small></div>
+    </div>
+    <div class="campo"><label for="s-motivo">Motivo <span class="muted" style="font-weight:400">(obligatorio en ajustes)</span></label>
+      <input id="s-motivo" name="motivo" maxlength="200" placeholder="Compra a proveedor, unidades dañadas…"></div>
+    <div class="pie"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button><button class="btn" type="submit">Guardar movimiento</button></div>
+  </form>
+</dialog>

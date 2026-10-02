@@ -1,0 +1,22 @@
+[Unit]
+Description=Ferrepega - front (Flask servido por gunicorn, puerto 8000, solo localhost)
+After=network.target
+# /vagrant es una carpeta compartida con Windows: hay que esperar a que esté montada
+RequiresMountsFor=/vagrant
+
+[Service]
+Type=simple
+User=vagrant
+Group=vagrant
+WorkingDirectory=/vagrant/frontend
+# Clave de sesión y dirección del back: viven fuera del proyecto (la crea front.sh)
+EnvironmentFile=/etc/ferrepega-front.env
+# 127.0.0.1: gunicorn NO es alcanzable desde fuera; se entra por Nginx (puerto 80)
+ExecStart=/home/vagrant/venv-front/bin/gunicorn wsgi:app --workers 2 --bind 127.0.0.1:8000 --timeout 60
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

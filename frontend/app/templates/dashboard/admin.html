@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block titulo %}Panel{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div>
+    <h1>Panel de ventas</h1>
+    {% if resumen.actualizado_en %}<p>Datos calculados el {{ resumen.actualizado_en | fecha_hora }}; las ventas nuevas aparecen al actualizar.</p>{% endif %}
+  </div>
+  <form class="acciones" method="post" action="{{ url_for('dashboard.actualizar') }}">{{ csrf_input() }}
+    <button class="btn btn-sec" type="submit">Actualizar datos</button>
+  </form>
+</div>
+
+{% if not resumen.actualizado_en %}
+<section class="panel vacio">
+  <h3>Todavía no hay reportes calculados</h3>
+  <p>Los gráficos se arman a partir de las ventas registradas. Calcúlalos una vez para empezar.</p>
+  <form method="post" action="{{ url_for('dashboard.actualizar') }}">{{ csrf_input() }}
+    <button class="btn" type="submit">Calcular reportes</button>
+  </form>
+</section>
+{% else %}
+
+<section class="panel" aria-label="Resumen">
+  <div class="hero">
+    <div>
+      <p class="hero-etiqueta">Total vendido</p>
+      <p class="hero-cifra">{{ resumen.total_ventas | cop }}</p>
+    </div>
+    <ul class="cifras">
+      <li><b>{{ resumen.num_pedidos | entero }}</b><span>ventas</span></li>
+      <li><b>{{ resumen.unidades | entero }}</b><span>unidades vendidas</span></li>
+      <li><b>{{ resumen.ticket_promedio | cop }}</b><span>por venta, en promedio</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="panel" data-panel-grafica>
+  <div class="panel-cab">
+    <div><h2>Ventas por mes</h2><p>Total vendido en cada mes.</p></div>
+    <button class="btn btn-sec btn-mini" type="button" data-alternar aria-pressed="false">Ver como tabla</button>
+  </div>
+  <div class="vista-grafica">
+    <div class="grafica grafica-linea"><canvas id="g-mensual" role="img" aria-label="Línea de ventas por mes: de {{ (mensuales | first).anio }} a {{ (mensuales | last).anio }}"></canvas></div>
+  </div>
+  <div class="vista-tabla" hidden>
+    <div class="tabla-envoltura"><table>
+      <caption class="sr-only">Ventas por mes</caption>
+      <thead><tr><th>Mes</th><th class="num">Ventas</th><th class="num">Total vendido</th></tr></thead>
+      <tbody>{% for m in mensuales | reverse %}<tr><td>{{ m.anio | mes_anio(m.mes) }}</td><td class="num">{{ m.num_pedidos | entero }}</td><td class="num">{{ m.total_ventas | cop }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div>
+</section>
+
+<div class="rejilla-2">
+  <section class="panel" data-panel-grafica>
+    <div class="panel-cab">
+      <div><h2>Productos más vendidos</h2><p>Los 8 primeros, por {{ 'unidades' if metrica == 'unidades' else 'ingresos' }}.</p></div>
+      <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+        <span class="segmentos" role="group" aria-label="Ordenar por">
+          <a href="{{ url_for('dashboard.inicio', metrica='ingresos') }}" {% if metrica == 'ingresos' %}aria-current="true"{% endif %}>Ingresos</a>
+          <a href="{{ url_for('dashboard.inicio', metrica='unidades') }}" {% if metrica == 'unidades' %}aria-current="true"{% endif %}>Unidades</a>
+        </span>
+        <button class="btn btn-sec btn-mini" type="button" data-alternar aria-pressed="false">Ver como tabla</button>
+      </div>
+    </div>
+    <div class="vista-grafica"><div class="grafica" data-barras-alto="{{ top | length }}"><canvas id="g-top" role="img" aria-label="Barras con los 8 productos más vendidos por {{ metrica }}"></canvas></div></div>
+    <div class="vista-tabla" hidden><div class="tabla-envoltura"><table>
+      <caption class="sr-only">Productos más vendidos</caption>
+      <thead><tr><th>Producto</th><th class="num">Unidades</th><th class="num">Ingresos</th></tr></thead>
+      <tbody>{% for p in top %}<tr><td>{{ p.nombre }}</td><td class="num">{{ p.unidades | entero }}</td><td class="num">{{ p.ingresos | cop }}</td></tr>{% endfor %}</tbody>
+    </table></div></div>
+  </section>
+
+  <section class="panel" data-panel-grafica>
+    <div class="panel-cab">
+      <div><h2>Ventas por categoría</h2><p>Qué parte del total aporta cada una.</p></div>
+      <button class="btn btn-sec btn-mini" type="button" data-alternar aria-pressed="false">Ver como tabla</button>
+    </div>
+    <div class="vista-grafica"><div class="grafica" data-barras-alto="{{ categorias | length }}"><canvas id="g-categorias" role="img" aria-label="Barras de ventas por categoría"></canvas></div></div>
+    <div class="vista-tabla" hidden><div class="tabla-envoltura"><table>
+      <caption class="sr-only">Ventas por categoría</caption>
+      <thead><tr><th>Categoría</th><th class="num">Unidades</th><th class="num">Total</th><th class="num">Parte</th></tr></thead>
+      <tbody>{% for c in categorias %}<tr><td>{{ c.categoria }}</td><td class="num">{{ c.unidades | entero }}</td><td class="num">{{ c.total_ventas | cop }}</td><td class="num">{{ ('%.1f' % c.porcentaje).replace('.', ',') }} %</td></tr>{% endfor %}</tbody>
+    </table></div></div>
+  </section>
+</div>
+
+<div class="rejilla-2">
+  <section class="panel" data-panel-grafica>
+    <div class="panel-cab">
+      <div><h2>Ventas por vendedor</h2><p>Total vendido por cada persona del equipo.</p></div>
+      <button class="btn btn-sec btn-mini" type="button" data-alternar aria-pressed="false">Ver como tabla</button>
+    </div>
+    <div class="vista-grafica"><div class="grafica" data-barras-alto="{{ vendedores | length }}"><canvas id="g-vendedores" role="img" aria-label="Barras de ventas por vendedor"></canvas></div></div>
+    <div class="vista-tabla" hidden><div class="tabla-envoltura"><table>
+      <caption class="sr-only">Ventas por vendedor</caption>
+      <thead><tr><th>Vendedor</th><th class="num">Ventas</th><th class="num">Total</th></tr></thead>
+      <tbody>{% for v in vendedores %}<tr><td>{{ v.nombre }}</td><td class="num">{{ v.num_ventas | entero }}</td><td class="num">{{ v.total_ventas | cop }}</td></tr>{% endfor %}</tbody>
+    </table></div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-cab">
+      <div><h2>Poco stock</h2><p>Productos por debajo de su mínimo.</p></div>
+    </div>
+    {% if bajo.items %}
+      <ul class="alerta-stock">
+        {% for b in bajo['items'] %}
+          <li><span><a class="fila-enlace" href="{{ url_for('catalogo.detalle', producto_id=b.producto_id) }}" style="font-weight:500;text-decoration:none;color:var(--ink)">{{ b.nombre }}</a><span class="sub muted" style="display:block;font-size:0.8125rem">{{ b.categoria }}</span></span>
+              <span class="nowrap">{% if b.cantidad == 0 %}<span class="badge badge-bad">Agotado</span>{% else %}<span class="badge badge-warn">{{ b.cantidad }} de {{ b.stock_minimo }}</span>{% endif %}</span></li>
+        {% endfor %}
+      </ul>
+      <p style="margin-top:1rem"><a href="{{ url_for('inventario.bajo') }}">Ver los {{ bajo.total | entero }} productos con poco stock</a></p>
+    {% else %}
+      <div class="vacio"><h3>Todo en orden</h3><p>Ningún producto está por debajo de su mínimo.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<script type="application/json" id="datos-panel">{{ {'mensuales': mensuales, 'top': top, 'categorias': categorias, 'vendedores': vendedores, 'metrica': metrica} | tojson }}</script>
+{% endif %}
+{% endblock %}
+{% block scripts %}{% if resumen.actualizado_en %}
+<script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/graficas.js') }}"></script>
+<script src="{{ url_for('static', filename='js/panel_admin.js') }}"></script>
+{% endif %}{% endblock %}

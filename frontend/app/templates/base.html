@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block titulo %}{% endblock %} · Ferrepega</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <script src="{{ url_for('static', filename='js/tema.js') }}"></script>
+</head>
+<body>
+{% include "_iconos.html" %}
+{% from "_macros.html" import icono with context %}
+<div class="app">
+  <header class="barra-movil">
+    <b>Ferrepega</b>
+    <button type="button" id="abrir-menu" aria-expanded="false" aria-controls="lateral">Menú</button>
+  </header>
+
+  <aside class="lateral" id="lateral">
+    <a class="marca" href="{{ url_for('raiz') }}"><b>Ferrepega</b><small>Ferretería · inventario y ventas</small></a>
+    <div class="cinta" aria-hidden="true"></div>
+    <nav aria-label="Principal">
+      <ul class="menu">
+        {% for e in menu %}
+          <li><a href="{{ url_for(e.destino) }}" {% if e.activo %}aria-current="page"{% endif %}>{{ icono(e.icono) }}{{ e.texto }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+    <div class="persona">
+      <strong>{{ usuario.nombre }}</strong>
+      <span>{{ rol_texto }}</span>
+      <div class="acciones">
+        <button type="button" class="btn-lateral" id="cambiar-tema" aria-label="Cambiar entre tema claro y oscuro">{{ icono('tema') }}Tema</button>
+        <form method="post" action="{{ url_for('auth.salir') }}">{{ csrf_input() }}
+          <button class="btn-lateral" type="submit">{{ icono('salir') }}Salir</button>
+        </form>
+      </div>
+    </div>
+  </aside>
+
+  <main class="principal" id="contenido">
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% if mensajes %}
+        <div class="avisos" role="status">
+          {% for categoria, texto in mensajes %}<div class="aviso aviso-{{ categoria }}">{{ texto }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block contenido %}{% endblock %}
+  </main>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

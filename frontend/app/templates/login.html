@@ -1,0 +1,48 @@
+{% extends "base_publica.html" %}
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block cuerpo %}
+<div class="acceso">
+  <section class="acceso-marca">
+    <div>
+      <h1>Ferre&shy;pega</h1>
+      <div class="cinta" aria-hidden="true"></div>
+      <p>Inventario, ventas y reportes de la ferretería, en un solo lugar.</p>
+    </div>
+    <small>Proyecto de Redes e Infraestructura</small>
+  </section>
+  <section class="acceso-form">
+    <h2>Iniciar sesión</h2>
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% if mensajes %}<div class="avisos" role="status">{% for c, t in mensajes %}<div class="aviso aviso-{{ c }}">{{ t }}</div>{% endfor %}</div>{% endif %}
+    {% endwith %}
+    <form method="post" class="formulario" novalidate>
+      {{ csrf_input() }}
+      <input type="hidden" name="siguiente" value="{{ siguiente }}">
+      <div class="campo">
+        <label for="correo">Correo</label>
+        <input id="correo" name="correo" type="email" autocomplete="username" value="{{ correo }}" required autofocus>
+      </div>
+      <div class="campo">
+        <label for="contrasena">Contraseña</label>
+        <input id="contrasena" name="contrasena" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn" type="submit">Iniciar sesión</button>
+    </form>
+    <p style="margin-top:1.25rem">¿No tienes cuenta? <a href="{{ url_for('auth.registro') }}">Crea una como cliente</a>.</p>
+
+    {% if demo %}
+    <div class="demo">
+      <h3>Cuentas de demostración</h3>
+      <table>
+        <thead><tr><th>Rol</th><th>Correo</th><th>Contraseña</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Administrador</td><td>admin@ferrepega.com</td><td>Admin2025*</td><td><button type="button" class="btn btn-sec btn-mini" data-demo-correo="admin@ferrepega.com" data-demo-clave="Admin2025*">Usar</button></td></tr>
+          <tr><td>Vendedor</td><td>vendedor1@ferrepega.com</td><td>Vende2025*</td><td><button type="button" class="btn btn-sec btn-mini" data-demo-correo="vendedor1@ferrepega.com" data-demo-clave="Vende2025*">Usar</button></td></tr>
+          <tr><td>Cliente</td><td>cliente@ferrepega.com</td><td>Cliente2025*</td><td><button type="button" class="btn btn-sec btn-mini" data-demo-correo="cliente@ferrepega.com" data-demo-clave="Cliente2025*">Usar</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

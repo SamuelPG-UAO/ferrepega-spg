@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacion, estado_stock, columna_orden with context %}
+{% block titulo %}Inventario{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Inventario</h1><p>Crea y edita productos, controla su stock y revisa los movimientos.</p></div>
+  <div class="acciones"><button class="btn" type="button" data-dialogo="d-nuevo" data-limpiar>Nuevo producto</button></div>
+</div>
+{% include "inventario/_tabs.html" %}
+
+<form class="filtros" method="get" role="search">
+  <div class="campo ancho"><label for="q">Buscar producto</label><input id="q" name="q" type="search" value="{{ filtros.q }}"></div>
+  <div class="campo"><label for="categoria_id">Categoría</label>
+    <select id="categoria_id" name="categoria_id"><option value="">Todas</option>
+      {% for c in categorias %}<option value="{{ c.id }}" {% if filtros.categoria_id == c.id | string %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}
+    </select></div>
+  <div class="campo corto"><label for="disponible">Stock</label>
+    <select id="disponible" name="disponible"><option value="">Todos</option>
+      <option value="si" {% if filtros.disponible == 'si' %}selected{% endif %}>Con stock</option>
+      <option value="no" {% if filtros.disponible == 'no' %}selected{% endif %}>Agotados</option></select></div>
+  <div class="campo check" style="flex:0 0 auto;padding-bottom:0.6rem"><input id="inactivos" name="inactivos" type="checkbox" value="1" {% if incluir %}checked{% endif %}><label for="inactivos">Incluir inactivos</label></div>
+  <input type="hidden" name="ordenar_por" value="{{ filtros.ordenar_por }}">
+  {% if filtros.descendente %}<input type="hidden" name="descendente" value="true">{% endif %}
+  <button class="btn" type="submit">Buscar</button>
+  {% if filtros.q or filtros.categoria_id or filtros.disponible or incluir %}<a class="btn btn-sec" href="{{ url_for('inventario.productos') }}">Quitar filtros</a>{% endif %}
+</form>
+
+<section class="panel">
+  {% if pagina["items"] %}
+  <div class="tabla-envoltura"><table>
+    <thead><tr>
+      {{ columna_orden("Producto", "nombre", filtros.ordenar_por, filtros.descendente) }}
+      <th>Categoría</th>
+      {{ columna_orden("Precio", "precio", filtros.ordenar_por, filtros.descendente, "num") }}
+      {{ columna_orden("Stock", "stock", filtros.ordenar_por, filtros.descendente, "num") }}
+      <th class="num">Mínimo</th><th>Estado</th><th><span class="sr-only">Acciones</span></th>
+    </tr></thead>
+    <tbody>{% for p in pagina["items"] %}
+      <tr>
+        <td><a class="fila-enlace" href="{{ url_for('catalogo.detalle', producto_id=p.id) }}">{{ p.nombre }}</a></td>
+        <td>{{ p.categoria }}</td><td class="num">{{ p.precio | cop }}</td>
+        <td class="num">{{ p.stock | entero }}</td><td class="num">{{ p.stock_minimo | entero }}</td>
+        <td>{{ estado_stock(p) }}</td>
+        <td><div class="acciones-fila">
+          <button type="button" class="btn btn-sec btn-mini" data-dialogo="d-stock" data-limpiar
+                  data-rellenar='{{ {"producto_id": p.id, "tipo": "ENTRADA"} | tojson | forceescape }}' data-titulo="{{ p.nombre }}">Stock</button>
+          <button type="button" class="btn btn-sec btn-mini" data-dialogo="d-editar" data-accion="{{ url_for('inventario.producto_editar', producto_id=p.id) }}"
+                  data-rellenar='{{ {"nombre": p.nombre, "descripcion": p.descripcion or "", "categoria_id": p.categoria_id, "precio": p.precio, "stock_minimo": p.stock_minimo, "activo": p.activo} | tojson | forceescape }}'>Editar</button>
+          <form method="post" action="{{ url_for('inventario.producto_estado', producto_id=p.id) }}"
+                {% if p.activo %}data-confirmar="¿Desactivar «{{ p.nombre }}»? Dejará de verse en el catálogo y no se podrá vender."{% endif %}>
+            {{ csrf_input() }}<input type="hidden" name="volver" value="{{ request.full_path.rstrip('?') }}">
+            <input type="hidden" name="activo" value="{{ '0' if p.activo else '1' }}">
+            <button type="submit" class="btn btn-sec btn-mini">{{ 'Desactivar' if p.activo else 'Reactivar' }}</button>
+          </form>
+        </div></td>
+      </tr>{% endfor %}</tbody>
+  </table></div>
+  {{ paginacion(pagina.total, pagina.limite, pagina.desplazamiento, "productos") }}
+  {% else %}
+  <div class="vacio"><h3>No hay productos con esos filtros</h3><p>Cambia la búsqueda o crea un producto nuevo.</p>
+    <button class="btn" type="button" data-dialogo="d-nuevo" data-limpiar>Nuevo producto</button></div>
+  {% endif %}
+</section>
+
+{% macro campos_producto(prefijo, nuevo) %}
+  <div class="campo"><label for="{{ prefijo }}-nombre">Nombre</label><input id="{{ prefijo }}-nombre" name="nombre" required minlength="2" maxlength="150"></div>
+  <div class="campo"><label for="{{ prefijo }}-desc">Descripción <span class="muted" style="font-weight:400">(opcional)</span></label><textarea id="{{ prefijo }}-desc" name="descripcion" rows="2" maxlength="2000"></textarea></div>
+  <div class="fila">
+    <div class="campo"><label for="{{ prefijo }}-cat">Categoría</label>
+      <select id="{{ prefijo }}-cat" name="categoria_id" required>{% for c in categorias %}<option value="{{ c.id }}">{{ c.nombre }}</option>{% endfor %}</select></div>
+    <div class="campo"><label for="{{ prefijo }}-precio">Precio (COP)</label><input id="{{ prefijo }}-precio" name="precio" inputmode="decimal" required placeholder="45900"></div>
+  </div>
+  <div class="fila">
+    {% if nuevo %}<div class="campo"><label for="{{ prefijo }}-inicial">Stock inicial</label><input id="{{ prefijo }}-inicial" name="stock_inicial" type="number" min="0" value="0"></div>{% endif %}
+    <div class="campo"><label for="{{ prefijo }}-min">Stock mínimo</label><input id="{{ prefijo }}-min" name="stock_minimo" type="number" min="0" value="5"><small>Por debajo de este número, el producto aparece en «Poco stock».</small></div>
+  </div>
+{% endmacro %}
+
+<dialog id="d-nuevo" aria-labelledby="t-nuevo">
+  <form method="post" action="{{ url_for('inventario.producto_nuevo') }}" class="formulario">
+    {{ csrf_input() }}<input type="hidden" name="volver" value="{{ request.full_path.rstrip('?') }}">
+    <h2 id="t-nuevo">Nuevo producto</h2>
+    {{ campos_producto("n", true) }}
+    <div class="pie"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button><button class="btn" type="submit">Crear producto</button></div>
+  </form>
+</dialog>
+<dialog id="d-editar" aria-labelledby="t-editar">
+  <form method="post" class="formulario">
+    {{ csrf_input() }}<input type="hidden" name="volver" value="{{ request.full_path.rstrip('?') }}">
+    <h2 id="t-editar">Editar producto</h2>
+    {{ campos_producto("e", false) }}
+    <div class="campo check"><input id="e-activo" name="activo" type="checkbox" value="1"><label for="e-activo">Producto activo (visible en el catálogo y vendible)</label></div>
+    <p class="muted" style="margin:0;font-size:0.875rem">Las unidades en stock se cambian con el botón «Stock», para que quede registrado el movimiento.</p>
+    <div class="pie"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button><button class="btn" type="submit">Guardar cambios</button></div>
+  </form>
+</dialog>
+{% include "inventario/_dialogo_stock.html" %}
+{% endblock %}

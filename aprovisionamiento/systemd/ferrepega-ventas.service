@@ -1,0 +1,23 @@
+[Unit]
+Description=Ferrepega - servicio-ventas (FastAPI, puerto 8003, solo localhost)
+After=network.target postgresql.service
+Wants=postgresql.service
+# /vagrant es una carpeta compartida con Windows: hay que esperar a que esté montada
+RequiresMountsFor=/vagrant
+PartOf=ferrepega-back.target
+
+[Service]
+Type=simple
+User=vagrant
+Group=vagrant
+WorkingDirectory=/vagrant/backend/servicio-ventas
+# 127.0.0.1: el servicio NO es alcanzable desde fuera de la VM; se entra por el gateway
+ExecStart=/home/vagrant/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8003
+# Si se cae, systemd lo vuelve a levantar a los 3 segundos
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=ferrepega-back.target

@@ -1,0 +1,320 @@
+/* =====================================================================
+   Ferrepega - sistema de diseño
+   Idea: "plano de obra". Barra lateral azul marino, superficies de
+   concreto neutro y un único acento amarillo de cinta de peligro.
+   ===================================================================== */
+
+/* --- Tipografía local (Barlow, licencia OFL): no depende de internet --- */
+@font-face { font-family: "Barlow"; font-weight: 400; font-display: swap; src: url("../fonts/barlow-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 500; font-display: swap; src: url("../fonts/barlow-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-weight: 600; font-display: swap; src: url("../fonts/barlow-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Semi Condensed"; font-weight: 600; font-display: swap; src: url("../fonts/barlow-semi-condensed-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Semi Condensed"; font-weight: 700; font-display: swap; src: url("../fonts/barlow-semi-condensed-latin-700-normal.woff2") format("woff2"); }
+
+/* --- Colores: claro por defecto, oscuro según el sistema o el botón de tema --- */
+:root {
+  color-scheme: light;
+  --page: #efefec;
+  --surface: #fcfcfb;
+  --surface-2: #f5f5f2;           /* fondo de filas, controles en reposo */
+  --ink: #0f2236;                 /* azul casi negro: texto principal */
+  --ink-2: #4a5666;               /* texto secundario */
+  --muted: #7d8794;               /* ejes, marcadores de posición */
+  --line: rgba(15, 34, 54, 0.12); /* bordes finos */
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+
+  --navy: #11263c;                /* barra lateral y botón principal */
+  --navy-hover: #1b3a58;
+  --navy-ink: #e8eef4;
+  --navy-muted: #9fb0c1;
+  --hazard: #f2c200;              /* cinta de peligro: el único amarillo */
+
+  --series-1: #2a78d6;            /* azul de la paleta de datos validada */
+  --series-wash: rgba(42, 120, 214, 0.10);
+  --focus: #2a78d6;
+
+  --ok-fg: #0a5c0a;    --ok-bg: #e2f2e2;
+  --warn-fg: #7a4e00;  --warn-bg: #fbefc9;
+  --bad-fg: #a82727;   --bad-bg: #fae2e2;
+  --info-fg: #1c5cab;  --info-bg: #e1ecfa;
+  --danger: #c13333;   --danger-hover: #a82727;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+    --ink: #f4f6f8; --ink-2: #c3c2b7; --muted: #898781;
+    --line: rgba(255, 255, 255, 0.12); --grid: #2c2c2a; --baseline: #383835;
+    --navy: #0a1827; --navy-hover: #14304b;
+    --series-1: #3987e5; --series-wash: rgba(57, 135, 229, 0.14); --focus: #6da7ec;
+    --ok-fg: #8fd68f; --ok-bg: #16301a;
+    --warn-fg: #f0c25a; --warn-bg: #3a2d0c;
+    --bad-fg: #f19a9a; --bad-bg: #3b1818;
+    --info-fg: #86b6ef; --info-bg: #16283f;
+    --danger: #d95555; --danger-hover: #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232321;
+  --ink: #f4f6f8; --ink-2: #c3c2b7; --muted: #898781;
+  --line: rgba(255, 255, 255, 0.12); --grid: #2c2c2a; --baseline: #383835;
+  --navy: #0a1827; --navy-hover: #14304b;
+  --series-1: #3987e5; --series-wash: rgba(57, 135, 229, 0.14); --focus: #6da7ec;
+  --ok-fg: #8fd68f; --ok-bg: #16301a;
+  --warn-fg: #f0c25a; --warn-bg: #3a2d0c;
+  --bad-fg: #f19a9a; --bad-bg: #3b1818;
+  --info-fg: #86b6ef; --info-bg: #16283f;
+  --danger: #d95555; --danger-hover: #e66767;
+}
+
+/* --- Base -------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font: 400 16px/1.5 "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+h1, h2, h3 { font-family: "Barlow Semi Condensed", "Barlow", system-ui, sans-serif; font-weight: 600; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: 2rem; line-height: 1.15; }
+h2 { font-size: 1.25rem; line-height: 1.25; }
+h3 { font-size: 1.0625rem; line-height: 1.3; }
+p { margin: 0 0 0.75em; }
+a { color: var(--info-fg); text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.muted { color: var(--ink-2); }
+.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nowrap { white-space: nowrap; }
+
+/* --- Estructura -------------------------------------------------------- */
+.app { display: grid; grid-template-columns: 15rem minmax(0, 1fr); min-height: 100vh; }
+.lateral {
+  background: var(--navy); color: var(--navy-ink);
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 1.5rem 0 1rem;
+}
+.marca { padding: 0 1.5rem 1.25rem; text-decoration: none; color: #fff; display: block; }
+.marca b { font: 700 1.75rem/1 "Barlow Semi Condensed", sans-serif; letter-spacing: 0.01em; display: block; }
+.marca small { display: block; margin-top: 0.35rem; font-size: 0.8125rem; color: var(--navy-muted); }
+/* La cinta de peligro: el único elemento decorativo de todo el sitio */
+.cinta {
+  height: 6px; margin: 0 1.5rem 1.25rem; border-radius: 1px;
+  background: repeating-linear-gradient(-45deg, var(--hazard) 0 7px, #14202d 7px 14px);
+}
+.menu { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
+.menu a {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1.5rem; color: var(--navy-ink);
+  text-decoration: none; font-weight: 500; border-left: 3px solid transparent;
+}
+.menu a:hover { background: var(--navy-hover); }
+.menu a[aria-current="page"] { background: var(--navy-hover); border-left-color: var(--hazard); color: #fff; }
+.menu svg, .btn svg { width: 1.25rem; height: 1.25rem; flex: none; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.persona { padding: 1rem 1.5rem 0; border-top: 1px solid rgba(255, 255, 255, 0.12); font-size: 0.9375rem; }
+.persona strong { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.persona span { color: var(--navy-muted); font-size: 0.8125rem; }
+.persona .acciones { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.btn-lateral {
+  background: transparent; color: var(--navy-ink); border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px; padding: 0.35rem 0.7rem; font: inherit; font-size: 0.875rem; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+}
+.btn-lateral:hover { background: var(--navy-hover); }
+.btn-lateral svg { width: 1rem; height: 1rem; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.barra-movil { display: none; }
+
+.principal { padding: 2rem 2.5rem 4rem; min-width: 0; max-width: 84rem; width: 100%; }
+.cabecera { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 2rem; margin-bottom: 1.5rem; }
+.cabecera p { margin: 0.25rem 0 0; color: var(--ink-2); }
+.cabecera .acciones { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+
+/* --- Paneles ------------------------------------------------------------ */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1.25rem 1.5rem; min-width: 0; }
+.panel + .panel { margin-top: 1.25rem; }
+.venta-nueva > .panel + .panel, .rejilla-2 > .panel + .panel, .ficha > .panel + .panel { margin-top: 0; }
+[hidden] { display: none !important; }
+.panel-cab { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.panel-cab p { margin: 0.125rem 0 0; font-size: 0.9375rem; color: var(--ink-2); }
+.rejilla-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-top: 1.25rem; }
+.rejilla-2 > .panel + .panel { margin-top: 0; }
+
+/* --- Botones ------------------------------------------------------------ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.5rem;
+  padding: 0.5rem 1rem; border-radius: 3px; border: 1px solid var(--navy); background: var(--navy); color: #fff;
+  font: 500 0.9375rem/1.2 "Barlow", sans-serif; text-decoration: none; cursor: pointer;
+}
+.btn:hover { background: var(--navy-hover); border-color: var(--navy-hover); }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .btn:not(.btn-sec):not(.btn-peligro) { background: #2a78d6; border-color: #2a78d6; } :root:where(:not([data-theme="light"])) .btn:not(.btn-sec):not(.btn-peligro):hover { background: #3987e5; border-color: #3987e5; } }
+:root[data-theme="dark"] .btn:not(.btn-sec):not(.btn-peligro) { background: #2a78d6; border-color: #2a78d6; }
+:root[data-theme="dark"] .btn:not(.btn-sec):not(.btn-peligro):hover { background: #3987e5; border-color: #3987e5; }
+.btn-sec { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn-sec:hover { background: var(--surface-2); border-color: var(--ink-2); }
+.btn-peligro { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-peligro:hover { background: var(--danger-hover); border-color: var(--danger-hover); }
+.btn-mini { min-height: 2rem; padding: 0.25rem 0.65rem; font-size: 0.875rem; }
+.btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+.enlace-boton { background: none; border: 0; padding: 0; font: inherit; color: var(--info-fg); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+
+/* --- Formularios --------------------------------------------------------- */
+.campo { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.campo label, .campo .etiqueta { font-weight: 500; font-size: 0.9375rem; }
+.campo small { color: var(--ink-2); font-size: 0.8125rem; }
+input, select, textarea {
+  font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--baseline);
+  border-radius: 3px; padding: 0.5rem 0.65rem; min-height: 2.5rem; width: 100%; max-width: 100%;
+}
+input::placeholder, textarea::placeholder { color: var(--muted); }
+input:hover, select:hover, textarea:hover { border-color: var(--ink-2); }
+input[type="checkbox"], input[type="radio"] { width: 1.1rem; height: 1.1rem; min-height: 0; accent-color: var(--series-1); }
+.check { display: flex; align-items: center; gap: 0.5rem; }
+.check label { font-weight: 400; }
+.formulario { display: grid; gap: 1rem; }
+.formulario .fila { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.filtros { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; align-items: flex-end; margin-bottom: 1.25rem; }
+.filtros .campo { flex: 0 1 11rem; }
+.filtros .campo.ancho { flex: 1 1 16rem; }
+.filtros .campo.corto { flex: 0 1 8rem; }
+.filtros .campo.check { display: flex; flex-direction: row; align-items: center; flex: 0 0 auto; min-height: 2.75rem; padding-bottom: 0 !important; }
+
+/* --- Avisos --------------------------------------------------------------- */
+.avisos { display: grid; gap: 0.5rem; margin-bottom: 1.25rem; }
+.aviso { padding: 0.65rem 1rem; border-radius: 3px; border-left: 4px solid; display: flex; gap: 0.6rem; align-items: baseline; }
+.aviso-ok { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-fg); }
+.aviso-error { background: var(--bad-bg); color: var(--bad-fg); border-color: var(--bad-fg); }
+.aviso-aviso { background: var(--warn-bg); color: var(--warn-fg); border-color: var(--warn-fg); }
+
+/* --- Etiquetas de estado: siempre ícono + texto, nunca solo color ---------- */
+.badge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.125rem 0.55rem; border-radius: 2px; font-size: 0.8125rem; font-weight: 600; white-space: nowrap; }
+.badge::before { content: ""; width: 0.55rem; height: 0.55rem; background: currentColor; flex: none; }
+.badge-ok { background: var(--ok-bg); color: var(--ok-fg); }
+.badge-ok::before { border-radius: 50%; }
+.badge-warn { background: var(--warn-bg); color: var(--warn-fg); }
+.badge-warn::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.badge-bad { background: var(--bad-bg); color: var(--bad-fg); }
+.badge-bad::before { clip-path: polygon(15% 0, 50% 35%, 85% 0, 100% 15%, 65% 50%, 100% 85%, 85% 100%, 50% 65%, 15% 100%, 0 85%, 35% 50%, 0 15%); }
+.badge-neutro { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); }
+.badge-neutro::before { border-radius: 50%; opacity: 0.6; }
+
+/* --- Tablas ---------------------------------------------------------------- */
+.tabla-envoltura { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+caption { text-align: left; }
+th { text-align: left; font-weight: 600; padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--baseline); white-space: nowrap; color: var(--ink-2); font-size: 0.875rem; }
+th.num { text-align: right; }
+td { padding: 0.7rem 0.75rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tbody tr:hover { background: var(--surface-2); }
+td .sub { display: block; color: var(--ink-2); font-size: 0.8125rem; }
+td a.fila-enlace { color: var(--ink); font-weight: 500; text-decoration: none; }
+td a.fila-enlace:hover { text-decoration: underline; }
+tfoot td { border-bottom: 0; font-weight: 600; }
+.acciones-fila { display: flex; gap: 0.4rem; justify-content: flex-end; flex-wrap: wrap; }
+th a { color: inherit; text-decoration: none; }
+th a:hover { text-decoration: underline; }
+
+.paginacion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 1rem; font-size: 0.9375rem; color: var(--ink-2); }
+.paginacion .botones { display: flex; gap: 0.5rem; }
+
+.vacio { text-align: center; padding: 2.5rem 1rem; color: var(--ink-2); }
+.vacio h3 { color: var(--ink); margin-bottom: 0.35rem; }
+.vacio .btn { margin-top: 0.75rem; }
+
+/* --- Pestañas (vistas dentro de una página) ------------------------------- */
+.pestanas { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--line); margin-bottom: 1.25rem; overflow-x: auto; }
+.pestanas a { padding: 0.6rem 1rem; text-decoration: none; color: var(--ink-2); font-weight: 500; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.pestanas a:hover { color: var(--ink); }
+.pestanas a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--hazard); }
+
+/* --- Diálogos ----------------------------------------------------------------- */
+dialog { border: 1px solid var(--line); border-radius: 4px; padding: 0; width: min(34rem, calc(100vw - 2rem)); background: var(--surface); color: var(--ink); }
+dialog::backdrop { background: rgba(8, 18, 30, 0.55); }
+dialog form { padding: 1.5rem; }
+dialog h2 { margin-bottom: 1rem; }
+dialog .pie { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem; }
+
+/* --- Panel de ventas -------------------------------------------------------------- */
+.hero { display: flex; flex-wrap: wrap; gap: 1.5rem 3rem; align-items: flex-end; }
+.hero-cifra { font: 600 4rem/1 "Barlow Semi Condensed", "Barlow", sans-serif; letter-spacing: -0.005em; margin: 0.25rem 0 0; }
+.hero-etiqueta { color: var(--ink-2); font-size: 1rem; margin: 0; }
+.cifras { display: flex; flex-wrap: wrap; gap: 0.5rem 0; margin: 0; padding: 0; list-style: none; }
+.cifras li { padding: 0 2rem 0 0; margin-right: 2rem; border-right: 1px solid var(--line); }
+.cifras li:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+.cifras b { display: block; font: 600 1.75rem/1.2 "Barlow Semi Condensed", "Barlow", sans-serif; }
+.cifras span { color: var(--ink-2); font-size: 0.9375rem; }
+.grafica { position: relative; width: 100%; }
+.grafica-linea { height: 18rem; }
+.grafica canvas { display: block; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-size: 0.875rem; color: var(--ink-2); margin: 0 0 0.5rem; }
+.leyenda i { display: inline-block; width: 1.1rem; height: 2px; background: var(--series-1); vertical-align: middle; margin-right: 0.4rem; }
+.segmentos { display: inline-flex; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+.segmentos a { padding: 0.3rem 0.8rem; text-decoration: none; color: var(--ink-2); font-size: 0.875rem; font-weight: 500; }
+.segmentos a + a { border-left: 1px solid var(--line); }
+.segmentos a[aria-current="true"] { background: var(--surface-2); color: var(--ink); }
+.vista-tabla[hidden], .vista-grafica[hidden] { display: none; }
+.alerta-stock { list-style: none; margin: 0; padding: 0; }
+.alerta-stock li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.alerta-stock li:last-child { border-bottom: 0; }
+
+/* --- Catálogo -------------------------------------------------------------------------- */
+.producto-nombre { font-weight: 500; }
+.ficha { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 2rem; }
+.ficha dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.6rem 1.5rem; margin: 0; }
+.ficha dt { color: var(--ink-2); }
+.ficha dd { margin: 0; }
+.precio-grande { font: 600 2.5rem/1 "Barlow Semi Condensed", sans-serif; }
+
+/* --- Nueva venta ------------------------------------------------------------------------- */
+.venta-nueva { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+.resultados { list-style: none; margin: 0.75rem 0 0; padding: 0; max-height: 26rem; overflow-y: auto; }
+.resultados li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line); }
+.resultados .nombre { font-weight: 500; }
+.resultados small { display: block; color: var(--ink-2); }
+.carrito input[type="number"] { width: 5rem; text-align: right; min-height: 2.25rem; }
+.total-venta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--baseline); }
+.total-venta b { font: 600 2rem/1 "Barlow Semi Condensed", sans-serif; }
+
+/* --- Acceso (login y registro) ------------------------------------------------------------ */
+.acceso { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.acceso-marca { background: var(--navy); color: #fff; padding: 4rem 4rem 3rem; display: flex; flex-direction: column; justify-content: space-between; }
+.acceso-marca h1 { font: 700 clamp(3.5rem, 7vw, 6.5rem)/0.95 "Barlow Semi Condensed", sans-serif; letter-spacing: 0.005em; }
+.acceso-marca .cinta { height: 14px; margin: 1.75rem 0; background: repeating-linear-gradient(-45deg, var(--hazard) 0 14px, #14202d 14px 28px); }
+.acceso-marca p { color: var(--navy-muted); font-size: 1.125rem; max-width: 26rem; margin: 0; }
+.acceso-marca small { color: var(--navy-muted); }
+.acceso-form { padding: 4rem; display: flex; flex-direction: column; justify-content: center; max-width: 34rem; width: 100%; margin: 0 auto; }
+.acceso-form h2 { font-size: 1.75rem; margin-bottom: 1.25rem; }
+.demo { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--line); font-size: 0.9375rem; }
+.demo h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+.demo table td, .demo table th { padding: 0.35rem 0.5rem; }
+.demo button { font-size: 0.8125rem; }
+.demo { overflow-x: auto; }
+.demo table { width: 100%; font-size: 0.875rem; }
+.demo td:nth-child(2) { overflow-wrap: anywhere; }
+
+/* --- Error ---------------------------------------------------------------------------------- */
+.error-pagina { max-width: 34rem; padding: 3rem 0; }
+.error-pagina .codigo { font: 700 6rem/1 "Barlow Semi Condensed", sans-serif; color: var(--muted); }
+
+/* --- Pantallas angostas ------------------------------------------------------------------------ */
+@media (max-width: 62rem) {
+  .rejilla-2, .venta-nueva, .ficha { grid-template-columns: minmax(0, 1fr); }
+  .rejilla-2 > .panel + .panel { margin-top: 1.25rem; }
+}
+@media (max-width: 54rem) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .barra-movil { display: flex; align-items: center; justify-content: space-between; background: var(--navy); color: #fff; padding: 0.75rem 1rem; position: sticky; top: 0; z-index: 20; }
+  .barra-movil b { font: 700 1.4rem/1 "Barlow Semi Condensed", sans-serif; }
+  .barra-movil button { background: transparent; border: 1px solid rgba(255, 255, 255, 0.35); color: #fff; border-radius: 3px; padding: 0.35rem 0.8rem; font: inherit; }
+  .lateral { position: fixed; inset: 0 auto 0 0; width: min(18rem, 86vw); z-index: 30; transform: translateX(-100%); transition: transform 0.18s ease; height: 100vh; }
+  .lateral.abierto { transform: none; }
+  .principal { padding: 1.25rem 1rem 3rem; }
+  .hero-cifra { font-size: 3rem; }
+  .cifras li { padding-right: 1.25rem; margin-right: 1.25rem; }
+  .acceso { grid-template-columns: minmax(0, 1fr); }
+  .acceso-marca { padding: 2rem 1.5rem; }
+  .acceso-marca h1 { font-size: 3.5rem; }
+  .acceso-form { padding: 2rem 1.5rem; }
+  .formulario .fila { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media print { .lateral, .barra-movil, .acciones, .filtros, .paginacion .botones { display: none !important; } .app { display: block; } .panel { border: 0; } }

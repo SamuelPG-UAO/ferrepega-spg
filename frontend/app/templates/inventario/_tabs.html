@@ -1,0 +1,6 @@
+<nav class="pestanas" aria-label="Secciones del inventario">
+  <a href="{{ url_for('inventario.productos') }}" {% if request.endpoint == 'inventario.productos' %}aria-current="page"{% endif %}>Productos</a>
+  <a href="{{ url_for('inventario.bajo') }}" {% if request.endpoint == 'inventario.bajo' %}aria-current="page"{% endif %}>Poco stock</a>
+  <a href="{{ url_for('inventario.movimientos') }}" {% if request.endpoint == 'inventario.movimientos' %}aria-current="page"{% endif %}>Movimientos</a>
+  <a href="{{ url_for('inventario.categorias') }}" {% if request.endpoint == 'inventario.categorias' %}aria-current="page"{% endif %}>Categorías</a>
+</nav>

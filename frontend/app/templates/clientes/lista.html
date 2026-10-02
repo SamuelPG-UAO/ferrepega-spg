@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacion with context %}
+{% block titulo %}Clientes{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Clientes</h1><p>Personas a quienes les has vendido o les venderás.</p></div>
+  <div class="acciones"><button class="btn" type="button" data-dialogo="d-cliente" data-limpiar>Registrar cliente</button></div>
+</div>
+
+<form class="filtros" method="get" role="search">
+  <div class="campo ancho"><label for="q">Buscar cliente</label><input id="q" name="q" type="search" value="{{ q }}" placeholder="Nombre o correo"></div>
+  <button class="btn" type="submit">Buscar</button>
+  {% if q %}<a class="btn btn-sec" href="{{ url_for('clientes.lista') }}">Quitar búsqueda</a>{% endif %}
+</form>
+
+<section class="panel">
+  {% if pagina["items"] %}
+  <div class="tabla-envoltura"><table>
+    <thead><tr><th>Nombre</th><th>Correo</th><th>Ciudad</th></tr></thead>
+    <tbody>{% for c in pagina["items"] %}<tr><td>{{ c.nombre }}</td><td>{{ c.correo or '—' }}</td><td>{{ c.ciudad or '—' }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {{ paginacion(pagina.total, pagina.limite, pagina.desplazamiento, "clientes") }}
+  {% else %}
+  <div class="vacio"><h3>No hay clientes{% if q %} con esa búsqueda{% endif %}</h3>
+    <p>{% if q %}Prueba con otro nombre o correo.{% else %}Registra el primero para asociarlo a sus ventas.{% endif %}</p></div>
+  {% endif %}
+</section>
+
+<dialog id="d-cliente" aria-labelledby="t-cliente">
+  <form method="post" action="{{ url_for('clientes.crear') }}" class="formulario">
+    {{ csrf_input() }}
+    <h2 id="t-cliente">Registrar cliente</h2>
+    <div class="campo"><label for="c-nombre">Nombre</label><input id="c-nombre" name="nombre" required minlength="2" maxlength="100"></div>
+    <div class="fila">
+      <div class="campo"><label for="c-correo">Correo <span class="muted" style="font-weight:400">(opcional)</span></label><input id="c-correo" name="correo" type="email" maxlength="120"></div>
+      <div class="campo"><label for="c-ciudad">Ciudad <span class="muted" style="font-weight:400">(opcional)</span></label><input id="c-ciudad" name="ciudad" maxlength="80"></div>
+    </div>
+    <div class="pie"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button><button class="btn" type="submit">Registrar cliente</button></div>
+  </form>
+</dialog>
+{% endblock %}

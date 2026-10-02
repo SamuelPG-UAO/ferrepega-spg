@@ -1,0 +1,6 @@
+[Unit]
+Description=Ferrepega - todos los microservicios del back
+Wants=ferrepega-autenticacion.service ferrepega-inventario.service ferrepega-ventas.service ferrepega-analitica.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,43 @@
+{# Piezas reutilizables de interfaz #}
+
+{% macro icono(nombre) -%}
+<svg aria-hidden="true" focusable="false"><use href="#i-{{ nombre }}"/></svg>
+{%- endmacro %}
+
+{# Paginación: 'total' elementos, 'limite' por página, 'desplazamiento' actual #}
+{% macro paginacion(total, limite, desplazamiento, unidad="resultados") %}
+  {% set desde = desplazamiento + 1 if total else 0 %}
+  {% set hasta = [desplazamiento + limite, total] | min %}
+  <nav class="paginacion" aria-label="Paginación">
+    <span>{% if total %}Mostrando {{ desde | entero }}–{{ hasta | entero }} de {{ total | entero }} {{ unidad }}{% else %}Sin {{ unidad }}{% endif %}</span>
+    <span class="botones">
+      {% if desplazamiento > 0 %}
+        <a class="btn btn-sec btn-mini" href="{{ url_con(desplazamiento=[desplazamiento - limite, 0] | max or None) }}">Anterior</a>
+      {% endif %}
+      {% if hasta < total %}
+        <a class="btn btn-sec btn-mini" href="{{ url_con(desplazamiento=desplazamiento + limite) }}">Siguiente</a>
+      {% endif %}
+    </span>
+  </nav>
+{% endmacro %}
+
+{# Estado de stock de un producto #}
+{% macro estado_stock(p) -%}
+  {% if not p.activo %}<span class="badge badge-neutro">Inactivo</span>
+  {% elif not p.disponible %}<span class="badge badge-bad">Agotado</span>
+  {% elif p.bajo_stock %}<span class="badge badge-warn">Pocas unidades</span>
+  {% else %}<span class="badge badge-ok">Disponible</span>{% endif %}
+{%- endmacro %}
+
+{% macro estado_venta(estado) -%}
+  {% if estado == "COMPLETADA" %}<span class="badge badge-ok">Completada</span>
+  {% else %}<span class="badge badge-bad">Anulada</span>{% endif %}
+{%- endmacro %}
+
+{# Cabecera de columna ordenable por enlace: un clic ordena ascendente, el siguiente descendente #}
+{% macro columna_orden(titulo, clave, actual, desc, clase="") %}
+  {% set es_actual = (actual == clave) %}
+  <th class="{{ clase }}" {% if es_actual %}aria-sort="{{ 'descending' if desc else 'ascending' }}"{% endif %}>
+    <a href="{{ url_con(ordenar_por=clave, descendente=('true' if (es_actual and not desc) else None), desplazamiento=None) }}">{{ titulo }}{% if es_actual %} {{ '▼' if desc else '▲' }}{% endif %}</a>
+  </th>
+{% endmacro %}

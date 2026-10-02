@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block titulo %}Poco stock{% endblock %}
+{% block contenido %}
+<div class="cabecera"><div><h1>Inventario</h1><p>Productos por debajo de su stock mínimo, los más urgentes primero.</p></div></div>
+{% include "inventario/_tabs.html" %}
+<section class="panel">
+  {% if r["items"] %}
+  <p class="muted">{{ r.total | entero }} productos necesitan reposición{% if r.total > r["items"] | length %} (se muestran los {{ r["items"] | length | entero }} más urgentes){% endif %}.</p>
+  <div class="tabla-envoltura"><table>
+    <thead><tr><th>Producto</th><th>Categoría</th><th class="num">Stock</th><th class="num">Mínimo</th><th class="num">Faltan</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+    <tbody>{% for b in r["items"] %}
+      <tr><td><a class="fila-enlace" href="{{ url_for('catalogo.detalle', producto_id=b.producto_id) }}">{{ b.nombre }}</a></td>
+          <td>{{ b.categoria }}</td>
+          <td class="num">{% if b.cantidad == 0 %}<span class="badge badge-bad">0</span>{% else %}{{ b.cantidad | entero }}{% endif %}</td>
+          <td class="num">{{ b.stock_minimo | entero }}</td><td class="num"><strong>{{ b.faltante | entero }}</strong></td>
+          <td><div class="acciones-fila"><button type="button" class="btn btn-sec btn-mini" data-dialogo="d-stock" data-limpiar
+              data-rellenar='{{ {"producto_id": b.producto_id, "tipo": "ENTRADA"} | tojson | forceescape }}' data-titulo="{{ b.nombre }}">Registrar entrada</button></div></td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}
+  <div class="vacio"><h3>Todo en orden</h3><p>Ningún producto está por debajo de su mínimo.</p></div>
+  {% endif %}
+</section>
+{% include "inventario/_dialogo_stock.html" %}
+{% endblock %}

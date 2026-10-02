@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block titulo %}Usuarios{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Usuarios</h1><p>Quién puede entrar al sistema y con qué rol.</p></div>
+  <div class="acciones"><button class="btn" type="button" data-dialogo="d-nuevo" data-limpiar>Nuevo usuario</button></div>
+</div>
+<form class="filtros" method="get">
+  <div class="campo corto"><label for="rol">Rol</label>
+    <select id="rol" name="rol"><option value="">Todos</option>
+      {% for v, t in [('admin','Administrador'),('vendedor','Vendedor'),('cliente','Cliente')] %}<option value="{{ v }}" {% if rol == v %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+  <div class="campo corto"><label for="estado">Estado</label>
+    <select id="estado" name="estado"><option value="">Todos</option>
+      <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Activos</option>
+      <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Inactivos</option></select></div>
+  <button class="btn" type="submit">Filtrar</button>
+  {% if rol or estado %}<a class="btn btn-sec" href="{{ url_for('usuarios.lista') }}">Quitar filtros</a>{% endif %}
+</form>
+<section class="panel">
+  {% if filas %}
+  <div class="tabla-envoltura"><table>
+    <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+    <tbody>{% for u in filas %}
+      <tr><td>{{ u.nombre }}{% if u.id == yo %} <span class="badge badge-neutro">Tú</span>{% endif %}</td><td>{{ u.correo }}</td>
+          <td>{{ {'admin': 'Administrador', 'vendedor': 'Vendedor', 'cliente': 'Cliente'}[u.rol] }}</td>
+          <td>{% if u.activo %}<span class="badge badge-ok">Activo</span>{% else %}<span class="badge badge-neutro">Inactivo</span>{% endif %}</td>
+          <td><div class="acciones-fila"><button type="button" class="btn btn-sec btn-mini" data-dialogo="d-editar"
+              data-accion="{{ url_for('usuarios.editar', usuario_id=u.id) }}"
+              data-rellenar='{{ {"nombre": u.nombre, "rol": u.rol, "activo": u.activo, "contrasena": ""} | tojson | forceescape }}' data-titulo="{{ u.correo }}">Editar</button></div></td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  <nav class="paginacion" aria-label="Paginación"><span>Mostrando {{ (despl + 1) | entero }}–{{ (despl + filas | length) | entero }}</span>
+    <span class="botones">
+      {% if despl > 0 %}<a class="btn btn-sec btn-mini" href="{{ url_con(desplazamiento=[despl - por_pagina, 0] | max or None) }}">Anterior</a>{% endif %}
+      {% if hay_mas %}<a class="btn btn-sec btn-mini" href="{{ url_con(desplazamiento=despl + por_pagina) }}">Siguiente</a>{% endif %}
+    </span></nav>
+  {% else %}
+  <div class="vacio"><h3>No hay usuarios con esos filtros</h3><p>Quita los filtros para ver a todos.</p></div>
+  {% endif %}
+</section>
+
+<dialog id="d-nuevo" aria-labelledby="t-nuevo">
+  <form method="post" action="{{ url_for('usuarios.nuevo') }}" class="formulario">{{ csrf_input() }}
+    <h2 id="t-nuevo">Nuevo usuario</h2>
+    <div class="campo"><label for="n-nombre">Nombre completo</label><input id="n-nombre" name="nombre" required minlength="2" maxlength="100"></div>
+    <div class="campo"><label for="n-correo">Correo</label><input id="n-correo" name="correo" type="email" required></div>
+    <div class="fila">
+      <div class="campo"><label for="n-rol">Rol</label><select id="n-rol" name="rol"><option value="vendedor">Vendedor</option><option value="admin">Administrador</option><option value="cliente">Cliente</option></select></div>
+      <div class="campo"><label for="n-clave">Contraseña</label><input id="n-clave" name="contrasena" type="password" minlength="8" required autocomplete="new-password"><small>Mínimo 8 caracteres.</small></div>
+    </div>
+    <div class="pie"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button><button class="btn" type="submit">Crear usuario</button></div>
+  </form>
+</dialog>
+<dialog id="d-editar" aria-labelledby="t-editar">
+  <form method="post" class="formulario">{{ csrf_input() }}
+    <input type="hidden" name="volver" value="{{ request.full_path.rstrip('?') }}">
+    <h2 id="t-editar">Editar usuario</h2>
+    <p class="muted" style="margin:0" data-titulo></p>
+    <div class="campo"><label for="e-nombre">Nombre completo</label><input id="e-nombre" name="nombre" required minlength="2" maxlength="100"></div>
+    <div class="fila">
+      <div class="campo"><label for="e-rol">Rol</label><select id="e-rol" name="rol"><option value="vendedor">Vendedor</option><option value="admin">Administrador</option><option value="cliente">Cliente</option></select></div>
+      <div class="campo"><label for="e-clave">Nueva contraseña</label><input id="e-clave" name="contrasena" type="password" minlength="8" autocomplete="new-password"><small>Déjala vacía para no cambiarla.</small></div>
+    </div>
+    <div class="campo check"><input id="e-activo" name="activo" type="checkbox" value="1"><label for="e-activo">Puede iniciar sesión</label></div>
+    <div class="pie"><button type="button" class="btn btn-sec" data-cerrar>Cancelar</button><button class="btn" type="submit">Guardar cambios</button></div>
+  </form>
+</dialog>
+{% endblock %}

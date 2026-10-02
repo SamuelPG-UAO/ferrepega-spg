@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import paginacion, estado_venta with context %}
+{% block titulo %}Ventas{% endblock %}
+{% block contenido %}
+<div class="cabecera">
+  <div><h1>Ventas</h1><p>{% if usuario.rol == 'vendedor' %}Las ventas que has registrado.{% else %}Todas las ventas del negocio.{% endif %}</p></div>
+  <div class="acciones"><a class="btn" href="{{ url_for('ventas.nueva') }}">Registrar venta</a></div>
+</div>
+
+<form class="filtros" method="get">
+  <div class="campo corto"><label for="estado">Estado</label>
+    <select id="estado" name="estado">
+      <option value="">Todas</option>
+      <option value="COMPLETADA" {% if filtros.estado == 'COMPLETADA' %}selected{% endif %}>Completadas</option>
+      <option value="ANULADA" {% if filtros.estado == 'ANULADA' %}selected{% endif %}>Anuladas</option>
+    </select></div>
+  <div class="campo corto"><label for="desde">Desde</label><input id="desde" name="desde" type="date" value="{{ filtros.desde }}"></div>
+  <div class="campo corto"><label for="hasta">Hasta</label><input id="hasta" name="hasta" type="date" value="{{ filtros.hasta }}"></div>
+  {% if usuario.rol == 'admin' %}
+  <div class="campo"><label for="vendedor_id">Vendedor</label>
+    <select id="vendedor_id" name="vendedor_id"><option value="">Todos</option>
+      {% for id, nombre in equipo.items() %}<option value="{{ id }}" {% if filtros.vendedor_id == id | string %}selected{% endif %}>{{ nombre }}</option>{% endfor %}
+    </select></div>
+  {% endif %}
+  <button class="btn" type="submit">Filtrar</button>
+  {% if filtros.estado or filtros.desde or filtros.hasta or filtros.vendedor_id %}<a class="btn btn-sec" href="{{ url_for('ventas.lista') }}">Quitar filtros</a>{% endif %}
+</form>
+
+<section class="panel">
+  {% if pagina["items"] %}
+  <div class="tabla-envoltura"><table>
+    <thead><tr><th>Venta</th><th>Fecha</th><th>Cliente</th>{% if usuario.rol == 'admin' %}<th>Vendedor</th>{% endif %}<th class="num">Total</th><th>Estado</th></tr></thead>
+    <tbody>{% for v in pagina["items"] %}
+      <tr>
+        <td><a class="fila-enlace" href="{{ url_for('ventas.detalle', venta_id=v.id) }}">#{{ v.id }}</a></td>
+        <td class="nowrap">{{ v.fecha | fecha }}</td>
+        <td>{{ v.cliente_nombre or 'Venta de mostrador' }}</td>
+        {% if usuario.rol == 'admin' %}<td>{{ equipo.get(v.vendedor_id, 'Vendedor ' ~ v.vendedor_id) }}</td>{% endif %}
+        <td class="num">{{ v.total | cop }}</td>
+        <td>{{ estado_venta(v.estado) }}</td>
+      </tr>{% endfor %}</tbody>
+  </table></div>
+  {{ paginacion(pagina.total, pagina.limite, pagina.desplazamiento, "ventas") }}
+  {% else %}
+  <div class="vacio"><h3>No hay ventas con esos filtros</h3><p>Cambia el rango de fechas o quita los filtros.</p>
+    <a class="btn btn-sec" href="{{ url_for('ventas.lista') }}">Quitar filtros</a></div>
+  {% endif %}
+</section>
+{% endblock %}

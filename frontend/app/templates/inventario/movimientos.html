@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Movimientos{% endblock %}
+{% block contenido %}
+<div class="cabecera"><div><h1>Inventario</h1><p>Historial de entradas, salidas y ajustes. Nada se borra ni se edita.</p></div></div>
+{% include "inventario/_tabs.html" %}
+<form class="filtros" method="get">
+  <div class="campo corto"><label for="tipo">Tipo</label>
+    <select id="tipo" name="tipo"><option value="">Todos</option>
+      <option value="ENTRADA" {% if tipo == 'ENTRADA' %}selected{% endif %}>Entradas</option>
+      <option value="SALIDA" {% if tipo == 'SALIDA' %}selected{% endif %}>Salidas</option>
+      <option value="AJUSTE" {% if tipo == 'AJUSTE' %}selected{% endif %}>Ajustes</option></select></div>
+  <div class="campo corto"><label for="producto_id">N.º de producto</label><input id="producto_id" name="producto_id" inputmode="numeric" value="{{ producto_id }}"></div>
+  <button class="btn" type="submit">Filtrar</button>
+  {% if tipo or producto_id %}<a class="btn btn-sec" href="{{ url_for('inventario.movimientos') }}">Quitar filtros</a>{% endif %}
+</form>
+<section class="panel">
+  {% if filas %}
+  <div class="tabla-envoltura"><table>
+    <thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th class="num">Cantidad</th><th>Motivo</th><th>Venta</th><th>Registró</th></tr></thead>
+    <tbody>{% for m in filas %}
+      <tr><td class="nowrap">{{ m.fecha | fecha_hora }}</td><td>{{ m.producto_nombre }}</td>
+          <td>{% if m.tipo == 'ENTRADA' %}<span class="badge badge-ok">Entrada</span>{% elif m.tipo == 'SALIDA' %}<span class="badge badge-info badge-neutro">Salida</span>{% else %}<span class="badge badge-warn">Ajuste</span>{% endif %}</td>
+          <td class="num">{% if m.tipo == 'SALIDA' %}−{{ m.cantidad | entero }}{% elif m.cantidad > 0 %}+{{ m.cantidad | entero }}{% else %}−{{ (0 - m.cantidad) | entero }}{% endif %}</td>
+          <td>{{ m.motivo or '—' }}</td>
+          <td>{% if m.venta_id %}<a href="{{ url_for('ventas.detalle', venta_id=m.venta_id) }}">#{{ m.venta_id }}</a>{% else %}—{% endif %}</td>
+          <td>{{ equipo.get(m.usuario_id, '—') }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  <nav class="paginacion" aria-label="Paginación"><span>Mostrando {{ (despl + 1) | entero }}–{{ (despl + filas | length) | entero }}</span>
+    <span class="botones">
+      {% if despl > 0 %}<a class="btn btn-sec btn-mini" href="{{ url_con(desplazamiento=[despl - por_pagina, 0] | max or None) }}">Anterior</a>{% endif %}
+      {% if hay_mas %}<a class="btn btn-sec btn-mini" href="{{ url_con(desplazamiento=despl + por_pagina) }}">Siguiente</a>{% endif %}
+    </span></nav>
+  {% else %}
+  <div class="vacio"><h3>No hay movimientos con esos filtros</h3><p>Prueba con otro tipo o quita el filtro de producto.</p></div>
+  {% endif %}
+</section>
+{% endblock %}
