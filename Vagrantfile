@@ -5,6 +5,7 @@
 # Define dos servidores: ferrepega-back y ferrepega-front
 
 Vagrant.configure("2") do |config|
+config.vm.boot_timeout = 900
 
   # Imagen base (Ubuntu 22.04 LTS) compatible con VirtualBox
   config.vm.box = "ubuntu/jammy64"
@@ -18,7 +19,9 @@ Vagrant.configure("2") do |config|
 
     back.vm.provider "virtualbox" do |vb|
       vb.name   = "ferrepega-back"
-      vb.memory = 2048
+      # Entrega final: aquí corren Docker Swarm (manager), PostgreSQL, Prometheus,
+      # Grafana y parte de Spark, así que necesita más memoria que antes (2048).
+      vb.memory = 4096
       vb.cpus   = 2
     end
 
@@ -35,12 +38,13 @@ Vagrant.configure("2") do |config|
 
     front.vm.provider "virtualbox" do |vb|
       vb.name   = "ferrepega-front"
-      vb.memory = 1024
-      vb.cpus   = 1
+      # Entrega final: nodo trabajador de Swarm (réplicas de servicios y workers de Spark)
+      vb.memory = 3584
+      vb.cpus   = 2
     end
 
-     # Script de instalación: Nginx, gunicorn y el front en Flask
-    front.vm.provision "shell", path: "aprovisionamiento/front.sh"
+    # Se activará en el siguiente paso, cuando creemos el script
+    # front.vm.provision "shell", path: "aprovisionamiento/front.sh"
   end
 
 end

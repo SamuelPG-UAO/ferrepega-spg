@@ -8,6 +8,7 @@ Arranque (desde la carpeta servicio-inventario):
 Documentación interactiva (Swagger):  http://<ip>:8002/api/inventario/docs
 """
 from fastapi import Depends, FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -30,6 +31,11 @@ def salud(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
     return {"servicio": "servicio-inventario", "estado": "ok"}
 
+
+# Métricas para Prometheus: GET /metrics (solo accesible dentro de la red de Docker;
+# el gateway no enruta esta ruta hacia afuera).
+Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(
+    app, endpoint="/metrics", include_in_schema=False)
 
 app.include_router(catalogo.router)
 app.include_router(stock.router)

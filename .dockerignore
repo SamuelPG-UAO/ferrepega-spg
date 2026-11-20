@@ -1,0 +1,9 @@
+.git
+.vagrant
+**/__pycache__
+**/*.pyc
+**/.env
+datos/*.csv
+datos/no usados
+postman
+*.zip

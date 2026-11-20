@@ -107,6 +107,12 @@ def create_app(config_extra=None):
     def salud():
         return {"servicio": "ferrepega-front", "estado": "ok"}
 
+    # Métricas para Prometheus en GET /metrics (peticiones, errores y latencia por
+    # página). Agrupadas por "endpoint" para que no se multipliquen con los ids de la URL.
+    # El proxy de entrada (edge) no deja pasar /metrics hacia afuera.
+    from prometheus_flask_exporter import PrometheusMetrics
+    PrometheusMetrics(app, group_by="endpoint", excluded_paths=["/metrics", "/salud", "/static"])
+
     return app
 
 

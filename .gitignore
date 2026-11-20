@@ -19,3 +19,6 @@ datos/no usados/
 # --- Sistema ---
 .DS_Store
 Thumbs.db
+
+# --- Token para unir la VM front al Swarm (secreto) ---
+.swarm-token

@@ -1,0 +1,12 @@
+# Le dice a Grafana que cargue los dashboards que haya en esa carpeta
+apiVersion: 1
+providers:
+  - name: ferrepega
+    orgId: 1
+    folder: Ferrepega
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

@@ -10,6 +10,7 @@ Documentación interactiva (Swagger):  http://<ip>:8004/api/analitica/docs
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -42,6 +43,11 @@ def salud(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
     return {"servicio": "servicio-analitica", "estado": "ok"}
 
+
+# Métricas para Prometheus: GET /metrics (solo accesible dentro de la red de Docker;
+# el gateway no enruta esta ruta hacia afuera).
+Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(
+    app, endpoint="/metrics", include_in_schema=False)
 
 app.include_router(consultas.router)
 app.include_router(actualizacion.router)

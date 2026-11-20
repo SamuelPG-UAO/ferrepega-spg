@@ -8,6 +8,7 @@ Arranque (desde la carpeta servicio-ventas):
 Documentación interactiva (Swagger):  http://<ip>:8003/api/ventas/docs
 """
 from fastapi import Depends, FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -34,5 +35,10 @@ def salud(db: Session = Depends(get_db)):
 
 
 # clientes primero: "/api/ventas/clientes" no debe confundirse con "/{venta_id}"
+# Métricas para Prometheus: GET /metrics (solo accesible dentro de la red de Docker;
+# el gateway no enruta esta ruta hacia afuera).
+Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(
+    app, endpoint="/metrics", include_in_schema=False)
+
 app.include_router(clientes.router)
 app.include_router(ventas.router)

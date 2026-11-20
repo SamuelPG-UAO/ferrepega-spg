@@ -24,6 +24,7 @@ from decimal import Decimal
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from prometheus_client import Counter
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, lazyload
 
@@ -36,6 +37,11 @@ from ..schemas import (AnulacionOut, DetalleOut, PaginaExportacion, PaginaVentas
                        VentaCrearIn, VentaExportadaOut, VentaOut, VentaResumenOut)
 
 log = logging.getLogger("servicio-ventas")
+
+# Métrica de negocio para Grafana: ventas nuevas registradas desde que arrancó este contenedor
+VENTAS_REGISTRADAS = Counter(
+    "ferrepega_ventas_registradas",
+    "Ventas nuevas registradas con éxito")
 
 router = APIRouter(prefix="/api/ventas", tags=["Ventas"])
 
@@ -133,6 +139,7 @@ def crear_venta(
     venta_id = venta.id
     try:
         db.commit()
+        VENTAS_REGISTRADAS.inc()
     except Exception:
         log.exception("Inventario descontó stock para la venta #%s pero no se pudo guardar", venta_id)
         db.rollback()

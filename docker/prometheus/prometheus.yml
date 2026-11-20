@@ -1,0 +1,62 @@
+# =========================================================
+# Ferrepega - Configuración de Prometheus
+#
+# Prometheus "raspa" (scrape) el endpoint /metrics de cada réplica cada 10 s.
+# Para encontrar TODAS las réplicas usa el DNS de Swarm: el nombre especial
+# "tasks.<servicio>" devuelve una IP por cada réplica (tarea) del servicio.
+# Así, si una réplica muere o se mueve de nodo, Prometheus la detecta solo.
+# =========================================================
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  # --- Microservicios (FastAPI): /metrics lo expone prometheus-fastapi-instrumentator ---
+  - job_name: servicio-autenticacion
+    dns_sd_configs:
+      - names: ["tasks.autenticacion"]
+        type: A
+        port: 8001
+        refresh_interval: 5s
+
+  - job_name: servicio-inventario
+    dns_sd_configs:
+      - names: ["tasks.inventario"]
+        type: A
+        port: 8002
+        refresh_interval: 5s
+
+  - job_name: servicio-ventas
+    dns_sd_configs:
+      - names: ["tasks.ventas"]
+        type: A
+        port: 8003
+        refresh_interval: 5s
+
+  - job_name: servicio-analitica
+    dns_sd_configs:
+      - names: ["tasks.analitica"]
+        type: A
+        port: 8004
+        refresh_interval: 5s
+
+  # --- Front (Flask): /metrics lo expone prometheus-flask-exporter ---
+  - job_name: front
+    dns_sd_configs:
+      - names: ["tasks.front"]
+        type: A
+        port: 8000
+        refresh_interval: 5s
+
+  # --- Los nodos (CPU, memoria): un node-exporter por nodo del Swarm ---
+  - job_name: nodos
+    dns_sd_configs:
+      - names: ["tasks.node-exporter"]
+        type: A
+        port: 9100
+        refresh_interval: 5s
+
+  # --- Prometheus se monitorea a sí mismo ---
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

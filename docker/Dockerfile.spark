@@ -1,0 +1,30 @@
+# =========================================================
+# Ferrepega - Imagen de Spark (master, workers y trabajo de resúmenes)
+#
+# PySpark trae Spark completo (incluye spark-class y spark-submit); solo
+# hace falta Java. La misma imagen sirve para el master, los workers y para
+# lanzar el trabajo, así todos usan la misma versión de Python y de Spark.
+# Contexto de construcción: la RAÍZ del proyecto.
+# =========================================================
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openjdk-21-jre-headless procps \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN pip install "pyspark==4.3.0" psycopg2-binary requests \
+ && ln -s "$(python -c 'import os, pyspark; print(os.path.dirname(pyspark.__file__))')" /opt/spark
+
+# /opt/spark apunta a la carpeta de PySpark (que trae bin/spark-class, bin/spark-submit...)
+ENV SPARK_HOME=/opt/spark \
+    PYSPARK_PYTHON=python3 \
+    PATH="/opt/spark/bin:${PATH}"
+
+WORKDIR /app
+COPY spark/job_ventas.py /app/job_ventas.py
+# Copia del cálculo en Python del servicio, solo para la opción --verificar
+COPY backend/servicio-analitica/app/calculo.py /app/calculo.py
+
+EXPOSE 7077 8080 8081

@@ -1,0 +1,30 @@
+# =========================================================
+# Ferrepega - Imagen del front (Flask servido por gunicorn)
+# Contexto de construcción: la RAÍZ del proyecto.
+# =========================================================
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+COPY frontend/requirements.txt ./
+RUN pip install -r requirements.txt
+
+COPY frontend/ ./
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+ && useradd --system --uid 10001 --no-create-home ferre
+
+USER ferre
+EXPOSE 8000
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/salud', timeout=4)"
+
+ENTRYPOINT ["/entrypoint.sh"]
+# 1 proceso con 4 hilos: así las métricas de Prometheus viven en un solo proceso.
+# Para más capacidad se agregan réplicas del servicio (no procesos).
+CMD ["gunicorn", "wsgi:app", "--workers", "1", "--threads", "4", "--bind", "0.0.0.0:8000", "--timeout", "60"]

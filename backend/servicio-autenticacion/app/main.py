@@ -7,6 +7,7 @@ Punto de entrada. Arranque (desde la carpeta servicio-autenticacion):
 Documentación interactiva (Swagger):  http://<ip>:8001/api/auth/docs
 """
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from .routers import auth, usuarios
 
@@ -20,6 +21,11 @@ app = FastAPI(
     openapi_url="/api/auth/openapi.json",
     redoc_url=None,
 )
+
+# Métricas para Prometheus: GET /metrics (solo accesible dentro de la red de Docker;
+# el gateway no enruta esta ruta hacia afuera).
+Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(
+    app, endpoint="/metrics", include_in_schema=False)
 
 app.include_router(auth.router)
 app.include_router(usuarios.router)

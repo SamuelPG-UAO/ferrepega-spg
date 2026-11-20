@@ -1,0 +1,11 @@
+# =========================================================
+# Ferrepega - Imagen del ETL (carga el dataset Olist en las 4 bases)
+# Se ejecuta UNA vez y termina (ver scripts/06_cargar_datos.sh).
+# Los CSV y los .sql se montan desde la carpeta datos/ de la VM.
+# =========================================================
+FROM python:3.11-slim
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1 DATOS_DIR=/datos
+WORKDIR /app
+RUN pip install pandas bcrypt psycopg2-binary
+COPY datos/etl_olist.py /app/etl_olist.py
+ENTRYPOINT ["python", "/app/etl_olist.py"]

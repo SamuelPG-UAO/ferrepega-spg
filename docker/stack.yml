@@ -1,0 +1,291 @@
+# =========================================================
+# Ferrepega - Stack de Docker Swarm
+#
+#   docker stack deploy -c docker/stack.yml ferrepega
+#
+# Un "stack" es el conjunto de servicios de la aplicación. Swarm reparte las
+# réplicas entre los nodos, las vigila (healthcheck) y las vuelve a levantar
+# si fallan. Todos los servicios comparten la red overlay "red" y se llaman
+# por su nombre (autenticacion, ventas, db...): el DNS interno de Swarm
+# reparte entre las réplicas.
+#
+#  Navegador ──► edge (Nginx) ──► front ──► edge ──► autenticacion / inventario /
+#                  :80  (API Gateway)                ventas / analitica ──► db
+#   Observabilidad: prometheus ◄── (scrape /metrics) ── servicios y nodos ──► grafana
+#   Procesamiento paralelo: spark-master + spark-worker (x2) ──► resúmenes de analitica
+# =========================================================
+version: "3.8"
+
+# Parámetros comunes de los servicios (YAML "anchors": se escriben una vez y se reutilizan)
+x-despliegue-api: &despliegue-api
+  replicas: 2
+  update_config:               # actualizaciones sin caída: levanta la nueva antes de bajar la vieja
+    parallelism: 1
+    order: start-first
+    delay: 5s
+    failure_action: rollback
+  rollback_config:
+    order: start-first
+  restart_policy:
+    condition: any
+    delay: 3s
+  resources:
+    limits:
+      memory: 256M
+
+x-secreto-jwt: &secreto-jwt
+  - jwt_secret
+
+services:
+  # --------------------------------------------------------
+  # Entrada: API Gateway (api.ferrepega.test) + front (ferrepega.test)
+  # --------------------------------------------------------
+  edge:
+    image: 127.0.0.1:5000/ferrepega/edge:1.0
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: ingress          # "routing mesh": responde en la IP de cualquier nodo
+    networks: [red]
+    deploy:
+      <<: *despliegue-api
+      resources:
+        limits:
+          memory: 64M
+
+  front:
+    image: 127.0.0.1:5000/ferrepega/front:1.0
+    environment:
+      FERREPEGA_API_URL: http://edge
+      FERREPEGA_SECRET_KEY_FILE: /run/secrets/flask_secret
+      FERREPEGA_DEMO: "${FERREPEGA_DEMO:-1}"
+    secrets: [flask_secret]
+    networks: [red]
+    deploy: *despliegue-api
+
+  # --------------------------------------------------------
+  # Microservicios
+  # --------------------------------------------------------
+  autenticacion:
+    image: 127.0.0.1:5000/ferrepega/autenticacion:1.0
+    environment:
+      DATABASE_URL: postgresql+psycopg2://auth_user:Ferre_auth_2025@db:5432/auth_db
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+    secrets: *secreto-jwt
+    networks: [red]
+    deploy: *despliegue-api
+
+  inventario:
+    image: 127.0.0.1:5000/ferrepega/inventario:1.0
+    environment:
+      DATABASE_URL: postgresql+psycopg2://inventario_user:Ferre_inventario_2025@db:5432/inventario_db
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+    secrets: *secreto-jwt
+    networks: [red]
+    deploy: *despliegue-api
+
+  ventas:
+    image: 127.0.0.1:5000/ferrepega/ventas:1.0
+    environment:
+      DATABASE_URL: postgresql+psycopg2://ventas_user:Ferre_ventas_2025@db:5432/ventas_db
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      INVENTARIO_URL: http://inventario:8002     # comunicación síncrona (REST) con inventario
+    secrets: *secreto-jwt
+    networks: [red]
+    deploy: *despliegue-api
+
+  analitica:
+    image: 127.0.0.1:5000/ferrepega/analitica:1.0
+    environment:
+      DATABASE_URL: postgresql+psycopg2://analitica_user:Ferre_analitica_2025@db:5432/analitica_db
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      VENTAS_URL: http://ventas:8003             # comunicación síncrona (REST) con ventas
+    secrets: *secreto-jwt
+    networks: [red]
+    deploy: *despliegue-api
+
+  # --------------------------------------------------------
+  # Base de datos: UN PostgreSQL con las 4 bases (una por microservicio).
+  # Es con estado: se fija al nodo manager, donde vive su volumen.
+  # --------------------------------------------------------
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password]
+    configs:
+      - source: init_bases
+        target: /docker-entrypoint-initdb.d/00-init-bases.sh
+        mode: 0755
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -h 127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    networks: [red]
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: any
+        delay: 3s
+      resources:
+        limits:
+          memory: 512M
+
+  # --------------------------------------------------------
+  # Monitoreo y observabilidad
+  # --------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=2d
+    configs:
+      - source: prometheus_yml
+        target: /etc/prometheus/prometheus.yml
+    ports:
+      - target: 9090
+        published: 9090
+        protocol: tcp
+        mode: ingress
+    networks: [red]
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: any
+        delay: 3s
+      resources:
+        limits:
+          memory: 512M
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_password
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/ferrepega.json
+    secrets: [grafana_password]
+    configs:
+      - source: grafana_datasource
+        target: /etc/grafana/provisioning/datasources/prometheus.yml
+      - source: grafana_proveedor
+        target: /etc/grafana/provisioning/dashboards/ferrepega.yml
+      - source: grafana_dashboard
+        target: /var/lib/grafana/dashboards/ferrepega.json
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: ingress
+    networks: [red]
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: any
+        delay: 3s
+      resources:
+        limits:
+          memory: 384M
+
+  node-exporter:                  # CPU y memoria de cada nodo (uno por nodo: modo "global")
+    image: prom/node-exporter:v1.8.2
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    networks: [red]
+    deploy:
+      mode: global
+      restart_policy:
+        condition: any
+        delay: 3s
+      resources:
+        limits:
+          memory: 64M
+
+  # --------------------------------------------------------
+  # Procesamiento paralelo: clúster de Spark (1 master + 2 workers)
+  # El trabajo se lanza con docker/scripts/07_spark_actualizar.sh
+  # --------------------------------------------------------
+  spark-master:
+    image: 127.0.0.1:5000/ferrepega/spark:1.0
+    hostname: spark-master
+    command:
+      - sh
+      - -c
+      - SPARK_DAEMON_MEMORY=256m exec spark-class org.apache.spark.deploy.master.Master --port 7077 --webui-port 8080
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host               # interfaz web del master, en el nodo manager
+    networks: [red]
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: any
+        delay: 3s
+      resources:
+        limits:
+          memory: 1280M
+
+  spark-worker:
+    image: 127.0.0.1:5000/ferrepega/spark:1.0
+    command:
+      - sh
+      - -c
+      - SPARK_DAEMON_MEMORY=256m exec spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 --cores 1 --memory 768m --webui-port 8081
+    networks: [red]
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: any
+        delay: 5s
+      resources:
+        limits:
+          memory: 1536M
+
+networks:
+  red:
+    driver: overlay
+    attachable: true             # permite lanzar contenedores sueltos (ETL, Spark) dentro de la red
+
+volumes:
+  pgdata:
+
+secrets:                          # los crea 05_secretos_y_desplegar.sh (no están en el repositorio)
+  jwt_secret:
+    external: true
+  flask_secret:
+    external: true
+  postgres_password:
+    external: true
+  grafana_password:
+    external: true
+
+configs:                          # archivos de configuración repartidos por Swarm a todos los nodos
+  init_bases:
+    file: ./postgres/init-bases.sh
+  prometheus_yml:
+    file: ./prometheus/prometheus.yml
+  grafana_datasource:
+    file: ./grafana/provisioning/datasources/prometheus.yml
+  grafana_proveedor:
+    file: ./grafana/provisioning/dashboards/ferrepega.yml
+  grafana_dashboard:
+    file: ./grafana/dashboards/ferrepega.json

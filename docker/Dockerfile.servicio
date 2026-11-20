@@ -1,0 +1,44 @@
+# =========================================================
+# Ferrepega - Imagen de un microservicio FastAPI
+#
+# Una sola receta para los 4 servicios; se diferencian por los argumentos:
+#   docker build -f docker/Dockerfile.servicio \
+#       --build-arg SERVICIO=ventas --build-arg PUERTO=8003 \
+#       --build-arg RUTA_SALUD=/api/ventas/salud -t ferrepega/ventas .
+# El contexto de construcción es la RAÍZ del proyecto.
+# =========================================================
+FROM python:3.11-slim
+
+ARG SERVICIO
+ARG PUERTO
+ARG RUTA_SALUD
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PUERTO=${PUERTO} \
+    RUTA_SALUD=${RUTA_SALUD}
+
+WORKDIR /app
+
+# 1) Primero solo las dependencias: Docker reutiliza esta capa si el código cambia
+COPY backend/servicio-${SERVICIO}/requirements.txt ./
+RUN pip install -r requirements.txt
+
+# 2) Después el código
+COPY backend/servicio-${SERVICIO}/app ./app
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+ && useradd --system --uid 10001 --no-create-home ferre
+
+# No corre como root
+USER ferre
+EXPOSE ${PUERTO}
+
+# Swarm usa esto para saber si el contenedor está sano y reemplazarlo si no
+HEALTHCHECK --interval=10s --timeout=5s --start-period=25s --retries=3 \
+  CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:%s%s' % (os.environ['PUERTO'], os.environ['RUTA_SALUD']), timeout=4)"
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PUERTO}"]
